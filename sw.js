@@ -1,7 +1,9 @@
 // Opens the app instantly from the phone's copy, and fetches the newest version in the background.
-var CACHE = 'myday-v1';
+var CACHE = 'myday-v2';
 self.addEventListener('install', function (e) { self.skipWaiting(); });
-self.addEventListener('activate', function (e) { e.waitUntil(self.clients.claim()); });
+self.addEventListener('activate', function (e) {
+  e.waitUntil(caches.keys().then(function (ks) { return Promise.all(ks.filter(function (k) { return k !== CACHE; }).map(function (k) { return caches.delete(k); })); }).then(function () { return self.clients.claim(); }));
+});
 self.addEventListener('fetch', function (e) {
   var req = e.request, url = new URL(req.url);
   if (req.method !== 'GET' || /script\.google(usercontent)?\.com$/.test(url.hostname)) return;
