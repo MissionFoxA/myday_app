@@ -1,0 +1,15 @@
+// Opens the app instantly from the phone's copy, and fetches the newest version in the background.
+var CACHE = 'myday-v1';
+self.addEventListener('install', function (e) { self.skipWaiting(); });
+self.addEventListener('activate', function (e) { e.waitUntil(self.clients.claim()); });
+self.addEventListener('fetch', function (e) {
+  var req = e.request, url = new URL(req.url);
+  if (req.method !== 'GET' || /script\.google(usercontent)?\.com$/.test(url.hostname)) return;
+  var key = url.origin === location.origin && url.pathname.endsWith('/') || url.pathname.endsWith('/index.html') ? new Request(url.origin + url.pathname.replace(/index\.html$/, '')) : req;
+  e.respondWith(caches.open(CACHE).then(function (c) {
+    return c.match(key).then(function (hit) {
+      var net = fetch(req).then(function (r) { if (r && (r.ok || r.type === 'opaque')) c.put(key, r.clone()); return r; }).catch(function () { return hit; });
+      return hit || net;
+    });
+  }));
+});
