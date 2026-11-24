@@ -23,8 +23,8 @@ var DEFAULT_GEMINI_MODEL = 'gemini-flash-latest';
 
 // ---- Phone app (home-screen app on GitHub Pages) ----
 // Paste your two addresses here, then run setupPhoneApp once (see the setup guide).
-var PHONE_APP_URL = '';  // your GitHub Pages address, e.g. 'https://yourname.github.io/myday/'
-var API_URL = '';        // this script's web app address, ending in /exec
+var PHONE_APP_URL = 'https://missionfoxa.github.io/myday_app/';  // your GitHub Pages address, e.g. 'https://yourname.github.io/myday/'
+var API_URL = 'https://script.google.com/macros/s/AKfycbwFODWdQ6TXHIiIwPDdx-81iy8mJtjAEcG64ngcgLnCI9zGi6TRZv9-U4WACF9lErG6ug/exec';        // this script's web app address, ending in /exec
 
 /** The secret that lets only your phone use this script. */
 function appToken_() { return PropertiesService.getScriptProperties().getProperty('APP_TOKEN') || ''; }
