@@ -74,6 +74,14 @@
 *{box-sizing:border-box;min-width:0;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;height:100%;background:var(--g);touch-action:manipulation;-webkit-text-size-adjust:100%}
 *{touch-action:manipulation}
+/* Home-screen app on iPhone: iOS can size the page too short (grey strip at the bottom) and then move
+   only the picture, not the buttons. So the page itself never scrolls: it's pinned to the full screen
+   height and only the content area scrolls inside it. */
+html.standalone,html.standalone body{overflow:hidden;height:var(--appH,100lvh)}
+html.standalone body{position:fixed;top:0;left:0;right:0}
+html.standalone .app{position:absolute;inset:0;max-width:none;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;min-height:0}
+html.standalone .app>*{max-width:444px;margin-left:auto;margin-right:auto}
+html.standalone .tabs,html.standalone .fab,html.standalone .toast,html.standalone .dimmed,html.standalone .sheet,html.standalone .calview,html.standalone .alertb{position:absolute}
 body{color:var(--t);font:16px/1.4 Lexend,system-ui,sans-serif;letter-spacing:.01em}
 button,input,textarea,select{font:inherit;color:inherit}
 button{cursor:pointer;border:0;background:none;padding:0}
@@ -527,7 +535,7 @@ a{color:var(--p)}
 
   // ---------- theme ----------
   function applyTheme(t) {
-    document.documentElement.className = t === 'dark' ? 't-dark' : t === 'light' ? 't-light' : '';
+    var cl = document.documentElement.classList; cl.toggle('t-dark', t === 'dark'); cl.toggle('t-light', t === 'light');
     [].forEach.call(document.querySelectorAll('#st-theme button'), function (b) { b.classList.toggle('on', b.dataset.t === t); });
   }
   var theme = store('theme') || 'auto'; applyTheme(theme);
@@ -539,7 +547,7 @@ a{color:var(--p)}
     current = v;
     [].forEach.call(document.querySelectorAll('.view'), function (s) { s.classList.toggle('on', s.id === 'v-' + v); });
     [].forEach.call(document.querySelectorAll('.tabs button'), function (b) { b.classList.toggle('on', b.dataset.v === v); });
-    window.scrollTo(0, 0);
+    window.scrollTo(0, 0); var ap = document.querySelector('.app'); if (ap) ap.scrollTop = 0;
     if (loaders[v]) loaders[v]();
   }
   [].forEach.call(document.querySelectorAll('.tabs button'), function (b) { b.onclick = function () { show(b.dataset.v); }; });
@@ -853,24 +861,40 @@ a{color:var(--p)}
     if (SR) startListening(); else { $('m-state').textContent = 'Type it, or tap the microphone on your keyboard'; $('m-text').focus(); }
   };
   $('m-btn').onclick = function () { if (rec) stopListening(); else if (SR) startListening(); else { $('m-state').textContent = 'Voice isn\'t available here. Type it, or use your keyboard\'s microphone.'; $('m-text').focus(); } };
+  // One recogniser for the whole visit: iPhone asks for the microphone each time a new one starts,
+  // so reusing it means at most one question each time the app is opened.
+  var recog = null, heard = '';
+  function makeRecog() {
+    var r = new SR(); r.interimResults = true; r.maxAlternatives = 1; r.continuous = false;
+    r.onresult = function (e) {
+      if (!rec) return;
+      var t = ''; for (var i = 0; i < e.results.length; i++) t += e.results[i][0].transcript;
+      heard = t; $('m-said').textContent = '"' + t + '"'; $('m-text').value = t;
+      if (e.results[e.results.length - 1].isFinal) { stopListening(); check(t); }
+    };
+    r.onerror = function (e) {
+      if (!rec) return;
+      stopListening();
+      if (e.error === 'not-allowed' || e.error === 'service-not-allowed') recog = null;
+      $('m-state').textContent = e.error === 'not-allowed' || e.error === 'service-not-allowed'
+        ? 'The microphone is blocked here. Type it, or tap the mic on your keyboard.' : e.error === 'no-speech' ? 'I didn\'t hear anything. Tap to try again.' : e.error === 'aborted' ? 'Tap the button to talk again' : 'Voice stopped (' + e.error + '). Type it instead.';
+      $('m-text').focus();
+    };
+    r.onend = function () { if (rec) stopListening(); };
+    return r;
+  }
   function startListening() {
     try {
-      rec = new SR(); rec.lang = store('lang') || (/^hu/i.test(LOC) ? 'hu-HU' : 'en-US'); rec.interimResults = true; rec.maxAlternatives = 1;
-      rec.onresult = function (e) {
-        var t = ''; for (var i = 0; i < e.results.length; i++) t += e.results[i][0].transcript;
-        $('m-said').textContent = '"' + t + '"'; $('m-text').value = t;
-        if (e.results[e.results.length - 1].isFinal) { stopListening(); check(t); }
-      };
-      rec.onerror = function (e) {
-        stopListening();
-        $('m-state').textContent = e.error === 'not-allowed' || e.error === 'service-not-allowed'
-          ? 'The microphone is blocked here. Type it, or tap the mic on your keyboard.' : e.error === 'no-speech' ? 'I didn\'t hear anything. Tap to try again.' : 'Voice stopped (' + e.error + '). Type it instead.';
-        $('m-text').focus();
-      };
-      rec.onend = function () { if (rec) stopListening(); };
-      rec.start();
+      if (!recog) recog = makeRecog();
+      recog.lang = store('lang') || (/^hu/i.test(LOC) ? 'hu-HU' : 'en-US');
+      rec = recog; heard = '';
+      recog.start();
       $('m-state').textContent = 'Listening…'; $('m-wave').classList.add('on'); $('m-btn').classList.add('on');
-    } catch (err) { rec = null; $('m-state').textContent = 'Voice isn\'t available here. Type it instead.'; }
+    } catch (err) {
+      // already running (fast double tap): treat as listening; anything else: fall back to typing
+      if (err && err.name === 'InvalidStateError') return;
+      rec = null; recog = null; $('m-state').textContent = 'Voice isn\'t available here. Type it instead.';
+    }
   }
   function stopListening() {
     if (rec) { var r = rec; rec = null; try { r.stop(); } catch (e) {} }
@@ -1365,12 +1389,34 @@ a{color:var(--p)}
   // No zooming: iPhone ignores the page settings for pinch and double-tap, so block them here.
   ['gesturestart', 'gesturechange'].forEach(function (t) { document.addEventListener(t, function (e) { e.preventDefault(); }, { passive: false }); });
   document.addEventListener('dblclick', function (e) { e.preventDefault(); }, { passive: false });
-  var lastTap = 0, lastEl = null;
+  // A second tap close to the first one within 300 ms is a double-tap: stop it (and turn it into a normal tap on buttons).
+  var lastTap = 0, lastX = 0, lastY = 0;
   document.addEventListener('touchend', function (e) {
-    var now = Date.now();
-    if (now - lastTap < 300 && e.target === lastEl && !e.target.closest('input,textarea,select,[contenteditable]')) e.preventDefault();
-    lastTap = now; lastEl = e.target;
+    var t = e.changedTouches && e.changedTouches[0], now = Date.now(); if (!t) return;
+    var near = Math.abs(t.clientX - lastX) < 40 && Math.abs(t.clientY - lastY) < 40;
+    if (now - lastTap < 350 && near && !e.target.closest('input,textarea,select,[contenteditable]')) {
+      e.preventDefault();
+      var b = e.target.closest('button,a,[role=button],[data-ev]'); if (b) b.click();
+    }
+    lastTap = now; lastX = t.clientX; lastY = t.clientY;
   }, { passive: false });
+  // two-finger pinch
+  document.addEventListener('touchmove', function (e) { if (e.touches && e.touches.length > 1) e.preventDefault(); }, { passive: false });
+  // Home-screen app: pin the page to the real screen height (see the CSS note at html.standalone).
+  (function () {
+    var sa = window.navigator.standalone === true || (window.matchMedia && matchMedia('(display-mode: standalone)').matches);
+    if (!sa) return;
+    var root = document.documentElement; root.classList.add('standalone');
+    function fit() {
+      var portrait = !window.matchMedia || matchMedia('(orientation: portrait)').matches;
+      var h = Math.max(window.innerHeight, portrait ? Math.max(screen.height, screen.width) : Math.min(screen.height, screen.width));
+      root.style.setProperty('--appH', h + 'px'); window.scrollTo(0, 0);
+    }
+    // the page itself must never move (focusing a box in a sliding-in sheet would otherwise shift it)
+    [document.body, root].forEach(function (el) { el.addEventListener('scroll', function () { if (el.scrollTop) el.scrollTop = 0; }); });
+    fit(); window.addEventListener('resize', fit); window.addEventListener('orientationchange', function () { setTimeout(fit, 300); });
+    document.addEventListener('visibilitychange', function () { if (!document.hidden) setTimeout(fit, 50); });
+  })();
   // ---------- start ----------
   scheduleAlerts();
   homeDays = cache.days || {};
