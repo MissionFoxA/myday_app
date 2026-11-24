@@ -56,7 +56,7 @@
 </script>
 
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
@@ -72,7 +72,8 @@
   --leaf:#3fb56c;--leaf2:#2e9e57;--wilt:#9a6b2f;--pot:#e8703f}}
 
 *{box-sizing:border-box;min-width:0;-webkit-tap-highlight-color:transparent}
-html,body{margin:0;height:100%;background:var(--g)}
+html,body{margin:0;height:100%;background:var(--g);touch-action:manipulation;-webkit-text-size-adjust:100%}
+*{touch-action:manipulation}
 body{color:var(--t);font:16px/1.4 Lexend,system-ui,sans-serif;letter-spacing:.01em}
 button,input,textarea,select{font:inherit;color:inherit}
 button{cursor:pointer;border:0;background:none;padding:0}
@@ -1361,6 +1362,15 @@ a{color:var(--p)}
   $('b-cal').onclick = function () { openCalendar(null, homeDay || new Date()); };
   $('h-month').onclick = function () { openCalendar('month', homeDay || new Date()); };
 
+  // No zooming: iPhone ignores the page settings for pinch and double-tap, so block them here.
+  ['gesturestart', 'gesturechange'].forEach(function (t) { document.addEventListener(t, function (e) { e.preventDefault(); }, { passive: false }); });
+  document.addEventListener('dblclick', function (e) { e.preventDefault(); }, { passive: false });
+  var lastTap = 0, lastEl = null;
+  document.addEventListener('touchend', function (e) {
+    var now = Date.now();
+    if (now - lastTap < 300 && e.target === lastEl && !e.target.closest('input,textarea,select,[contenteditable]')) e.preventDefault();
+    lastTap = now; lastEl = e.target;
+  }, { passive: false });
   // ---------- start ----------
   scheduleAlerts();
   homeDays = cache.days || {};
