@@ -1,0 +1,1384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="My day">
+<meta name="theme-color" content="#1b1c20" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#fff8f4" media="(prefers-color-scheme: light)">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" type="image/png" href="icon-192.png">
+<title>My day</title>
+<style>html,body{overscroll-behavior:none}.setup{position:fixed;inset:0;z-index:100;background:var(--g);color:var(--t);display:flex;flex-direction:column;justify-content:center;padding:32px 28px;font:17px/1.45 Lexend,system-ui,sans-serif}
+.setup h1{font-size:28px;margin:0 0 12px}.setup p{color:var(--m);margin:0 0 14px}.setup textarea{width:100%;min-height:90px;border-radius:14px;border:1px solid var(--ln);background:var(--s);color:var(--t);padding:12px;font:inherit;font-size:14px;box-sizing:border-box}
+.setup button{margin-top:12px;border:0;border-radius:14px;padding:14px;font:inherit;font-weight:600;background:var(--a);color:var(--ona)}</style>
+<script>
+/* Phone app: talk to your Google script over the internet, with your secret. */
+(function () {
+  var K = 'myday_conn', conn = null;
+  function parse(code) {
+    code = String(code || '').trim(); var m = code.match(/[?&]k=([^&\s]+)/); if (m) code = m[1];
+    var c = JSON.parse(atob(decodeURIComponent(code).replace(/-/g, '+').replace(/_/g, '/')));
+    if (!c.u || !c.t) throw new Error('bad'); return c;
+  }
+  try { var q = new URLSearchParams(location.search).get('k'); if (q) localStorage.setItem(K, JSON.stringify(parse(q))); } catch (e) {}
+  try { conn = JSON.parse(localStorage.getItem(K) || 'null'); } catch (e) {}
+  function run() {
+    var ok = function () {}, bad = function (e) { console.error(e); };
+    var p = new Proxy({}, { get: function (_, k) {
+      if (k === 'withSuccessHandler') return function (f) { ok = f; return p; };
+      if (k === 'withFailureHandler') return function (f) { bad = f; return p; };
+      return function () {
+        var args = [].slice.call(arguments);
+        if (!conn) { bad(new Error('Open your setup link first')); return; }
+        fetch(conn.u, { method: 'POST', body: JSON.stringify({ t: conn.t, fn: k, args: args }) })
+          .then(function (r) { return r.json(); })
+          .then(function (j) { if (j.error) bad(new Error(j.error)); else ok(j.result); },
+                function () { bad(new Error('No connection. Check your internet and try again.')); });
+      };
+    } });
+    return p;
+  }
+  window.google = { script: { get run() { return run(); } } };
+  if (!conn) document.addEventListener('DOMContentLoaded', function () {
+    var d = document.createElement('div'); d.className = 'setup';
+    d.innerHTML = '<h1>Almost there</h1><p>Open the link from the email "My day: your phone app link" on this phone, in Safari. Or paste that link here:</p><textarea id="setup-code" placeholder="https://..."></textarea><button id="setup-go">Connect</button><p id="setup-msg"></p>';
+    document.body.appendChild(d);
+    document.getElementById('setup-go').onclick = function () {
+      try { localStorage.setItem(K, JSON.stringify(parse(document.getElementById('setup-code').value))); location.reload(); }
+      catch (e) { document.getElementById('setup-msg').textContent = 'That link does not look right. Copy the whole link from the email.'; }
+    };
+  });
+  if ('serviceWorker' in navigator) window.addEventListener('load', function () { navigator.serviceWorker.register('sw.js').catch(function () {}); });
+})();
+</script>
+
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ---------- Colours: Graphite sky (dark) and Peach day (light) ---------- */
+:root, .t-dark{--g:#1b1c20;--s:#26282d;--s2:#2f3137;--t:#f2f2f4;--m:#b4b7bf;--p:#7cc4ff;--on:#0c2236;--a:#ffb38a;--ona:#2a160c;
+  --c1:#372a31;--c2:#22303f;--c3:#363124;--c4:#2c2840;--v:#b8b0ff;--k2:#7cc4ff;--ln:#ffffff14;--sh:none;--dim:#000000a6;
+  --leaf:#4cc27a;--leaf2:#3fae6a;--wilt:#b8894a;--pot:#ffb38a}
+.t-light{--g:#fff8f4;--s:#ffffff;--s2:#f6eee9;--t:#1a1c38;--m:#4c4e6e;--p:#3a3f7a;--on:#ffffff;--a:#e8703f;--ona:#ffffff;
+  --c1:#ffe1e8;--c2:#daf5ef;--c3:#ece8ff;--c4:#f1eeff;--v:#7b6cd9;--k2:#2f8f7f;--ln:#1f21400f;--sh:0 4px 12px -8px #1f214040;--dim:#1a1c3870;
+  --leaf:#3fb56c;--leaf2:#2e9e57;--wilt:#9a6b2f;--pot:#e8703f}
+@media (prefers-color-scheme: light){:root:not(.t-dark){--g:#fff8f4;--s:#ffffff;--s2:#f6eee9;--t:#1a1c38;--m:#4c4e6e;--p:#3a3f7a;--on:#ffffff;--a:#e8703f;--ona:#ffffff;
+  --c1:#ffe1e8;--c2:#daf5ef;--c3:#ece8ff;--c4:#f1eeff;--v:#7b6cd9;--k2:#2f8f7f;--ln:#1f21400f;--sh:0 4px 12px -8px #1f214040;--dim:#1a1c3870;
+  --leaf:#3fb56c;--leaf2:#2e9e57;--wilt:#9a6b2f;--pot:#e8703f}}
+
+*{box-sizing:border-box;min-width:0;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;background:var(--g)}
+body{color:var(--t);font:16px/1.4 Lexend,system-ui,sans-serif;letter-spacing:.01em}
+button,input,textarea,select{font:inherit;color:inherit}
+button{cursor:pointer;border:0;background:none;padding:0}
+:focus-visible{outline:3px solid var(--p);outline-offset:2px}
+.app{max-width:480px;margin:0 auto;min-height:100%;position:relative;padding:max(14px,env(safe-area-inset-top)) 18px 110px}
+.view{display:none}.view.on{display:block;animation:in .2s ease-out}
+@keyframes in{from{opacity:0;transform:translateY(6px)}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+/* shared */
+.top{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:4px 0 14px}
+.top h1{font-size:24px;font-weight:600;margin:0;line-height:1.15}
+.top .r{display:flex;gap:8px;align-items:center}
+.pill{font-size:14px;font-weight:600;background:var(--s);border-radius:14px;padding:5px 12px;color:var(--a);box-shadow:var(--sh);white-space:nowrap}
+.ib{width:44px;height:44px;border-radius:14px;background:var(--s);display:grid;place-items:center;color:var(--m);box-shadow:var(--sh)}
+.ib svg{width:20px;height:20px}
+.sub{font-size:14px;color:var(--m);margin:-6px 0 14px}
+.card{background:var(--s);border-radius:18px;box-shadow:var(--sh)}
+.btn{text-decoration:none;display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:40px;font-weight:600;font-size:15px;border-radius:14px;padding:8px 16px;white-space:nowrap}
+.btn.sm{min-height:34px;font-size:13px;padding:5px 12px;border-radius:12px}
+.btn.a{background:var(--a);color:var(--ona)}.btn.p{background:var(--p);color:var(--on)}.btn.o{border:1.5px solid var(--a);color:var(--a)}.btn.g{background:var(--s2);color:var(--t)}
+.btn[disabled]{opacity:.5;pointer-events:none}
+.empty{text-align:center;color:var(--m);padding:28px 10px;font-size:15px}
+.skel{height:56px;border-radius:14px;background:var(--s);margin-bottom:8px;opacity:.6;animation:pulse 1.2s ease-in-out infinite alternate}
+@keyframes pulse{to{opacity:.25}}
+input[type=text],input[type=datetime-local],input[type=password],textarea,select{width:100%;font-size:16px;background:var(--s2);border:1.5px solid transparent;border-radius:12px;padding:10px 12px;color:var(--t)}
+input:focus,textarea:focus,select:focus{border-color:var(--p);outline:none}
+textarea{resize:vertical;min-height:90px}
+label.f{display:block;font-size:14px;color:var(--m);margin:12px 0 5px}
+
+/* tab bar + mic */
+.tabs{position:fixed;left:0;right:0;bottom:0;z-index:20;background:var(--s);border-top:1px solid var(--ln);padding:8px 0 max(10px,env(safe-area-inset-bottom))}
+.tabs .in{max-width:480px;margin:0 auto;display:flex;justify-content:space-around}
+.tabs button{display:flex;flex-direction:column;align-items:center;gap:3px;min-width:64px;min-height:48px;font-size:13px;color:var(--m)}
+.tabs button.on{color:var(--p);font-weight:600}
+.tabs svg{width:22px;height:22px}
+.fab{position:fixed;z-index:21;bottom:calc(84px + env(safe-area-inset-bottom));right:max(18px,calc(50% - 222px));width:58px;height:58px;border-radius:50%;background:var(--a);color:var(--ona);display:grid;place-items:center;box-shadow:0 10px 22px -8px var(--a)}
+.fab svg{width:26px;height:26px}
+
+/* toast */
+.toast{position:fixed;left:50%;bottom:calc(160px + env(safe-area-inset-bottom));transform:translateX(-50%) translateY(20px);opacity:0;z-index:40;background:var(--t);color:var(--g);padding:10px 16px;border-radius:14px;font-size:15px;font-weight:500;transition:.25s;max-width:min(420px,90vw);display:flex;gap:12px;align-items:center;pointer-events:none}
+.toast.on{opacity:1;transform:translateX(-50%) translateY(0);pointer-events:auto}
+.toast.err{background:#d9443a;color:#fff}
+.toast button{font-weight:600;color:var(--a)}
+.xpfly{position:fixed;z-index:41;left:50%;top:40%;transform:translate(-50%,0);font-size:28px;font-weight:600;color:var(--a);pointer-events:none;animation:fly 1.2s ease-out forwards}
+@keyframes fly{0%{opacity:0;transform:translate(-50%,20px) scale(.8)}20%{opacity:1;transform:translate(-50%,0) scale(1.1)}100%{opacity:0;transform:translate(-50%,-60px) scale(1)}}
+
+/* ---------- Home ---------- */
+.wkh{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;font-size:15px;color:var(--m)}
+.wkh .nav{display:flex;gap:4px}.wkh .nav button{width:36px;height:36px;border-radius:10px;display:grid;place-items:center;color:var(--m)}
+.wkh .nav svg{width:18px;height:18px}
+.wk{display:flex;gap:5px;margin:0 0 14px}
+.wk button{flex:1;text-align:center;border-radius:14px;padding:7px 0;font-size:13px;color:var(--m);background:var(--s);box-shadow:var(--sh);line-height:1.25;min-height:58px}
+.wk b{display:block;font-size:16px;color:var(--t);font-weight:600}
+.wk .sel{background:var(--p);color:var(--on)}.wk .sel b{color:var(--on)}
+.wk .td:not(.sel){outline:1.5px solid var(--p);outline-offset:-1.5px}
+.wk i{display:block;width:5px;height:5px;border-radius:50%;background:var(--a);margin:3px auto 0}
+.wk i.no{background:transparent}
+.bub[hidden]{display:none}
+.bub{display:flex;gap:10px;align-items:flex-start;margin-bottom:16px}
+.bub>i{flex:none;width:36px;height:36px;border-radius:50%;background:linear-gradient(140deg,var(--a),var(--p))}
+.bub p{margin:0;padding:11px 14px;border-radius:18px 18px 18px 6px;background:var(--s);box-shadow:var(--sh);font-size:15px}
+.ag{display:grid;grid-template-columns:50px 1fr;gap:8px 10px;align-items:start}
+.ag .tm{font-size:14px;font-weight:500;color:var(--m);padding-top:10px;white-space:nowrap}
+.blk{display:flex;gap:10px;align-items:flex-start;border-radius:14px;padding:10px 12px;font-weight:600;background:var(--c);color:var(--t)}
+.blk>div{flex:1}
+.blk small{display:block;font-size:14px;font-weight:400;color:var(--m);margin-top:1px}
+.blk.now{background:var(--p);color:var(--on)}.blk.now small{color:var(--on);opacity:.85}
+.blk.past{opacity:.55}
+.blk.missed{box-shadow:inset 0 0 0 1.5px var(--wilt)}
+.blk .q{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
+.chk{flex:none;width:28px;height:28px;border-radius:50%;border:2px solid currentColor;opacity:.7;display:grid;place-items:center;margin-top:1px}
+.chk:hover{opacity:1}.chk svg{width:16px;height:16px;opacity:0}.chk:hover svg{opacity:.6}
+
+/* ---------- Now ---------- */
+.xp{margin-bottom:8px}
+.xp .bar{height:10px;border-radius:5px;background:var(--s2);overflow:hidden}.xp .bar i{display:block;height:100%;background:var(--a);border-radius:5px;transition:width .6s}
+.xp .lb{display:flex;justify-content:space-between;font-size:14px;color:var(--m);margin-top:6px}
+.stack{position:relative;height:360px;margin:34px 0 0;touch-action:pan-y}
+.cd{position:absolute;inset:0;border-radius:28px}
+.cd.b2{background:var(--c3);transform:translateY(-22px) scale(.86)}
+.cd.b1{background:var(--c2);transform:translateY(-11px) scale(.93)}
+.cd.front{background:var(--s);border:1px solid var(--ln);box-shadow:0 18px 30px -18px #0009;padding:22px;display:flex;flex-direction:column;transition:transform .25s,opacity .25s;user-select:none}
+.cd.front.drag{transition:none}
+.tag{align-self:flex-start;font-size:13px;font-weight:600;background:var(--p);color:var(--on);padding:4px 12px;border-radius:12px}
+.tag.miss{background:var(--wilt);color:#fff}.tag.mail{background:var(--a);color:var(--ona)}
+.cd h2{font-size:32px;font-weight:600;margin:16px 0 6px;line-height:1.1;overflow-wrap:anywhere}
+.cd p{margin:0 0 4px;color:var(--m);font-size:15px}
+.cd .rw{margin-top:8px;font-size:14px;font-weight:600;color:var(--a)}
+.cd .acts{margin-top:auto;display:flex;flex-wrap:wrap;gap:8px}.cd .acts .btn{flex:1;min-width:0;min-height:48px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cd .acts .btn.wide{flex-basis:100%}
+.cd h2{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;overflow:hidden;overflow-wrap:anywhere}
+.cd h2.mid{font-size:27px}.cd h2.long{font-size:23px}
+.cd p{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.em>div{min-width:0}.em b{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.em>div>small{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;overflow-wrap:anywhere}
+.cd.front>*{flex:none}
+.dust{position:fixed;pointer-events:none;z-index:30;margin:0}
+.hint{text-align:center;color:var(--m);font-size:14px;margin:16px 0 8px}
+.dots{display:flex;justify-content:center;gap:6px}.dots i{width:8px;height:8px;border-radius:4px;background:var(--s2)}.dots i.on{width:22px;background:var(--p)}
+.swipehint{display:flex;justify-content:space-between;font-size:13px;color:var(--m);margin-top:10px;padding:0 6px}
+
+/* ---------- Inbox ---------- */
+.lane{padding:10px 10px 8px;margin-bottom:10px;border-left:5px solid var(--k);background:var(--c);border-radius:18px;box-shadow:var(--sh)}
+.lane h3{margin:2px 2px 8px;font-size:15px;font-weight:600;display:flex;justify-content:space-between;align-items:center}
+.lane h3 i{width:10px;height:10px;border-radius:50%;background:var(--k);display:inline-block;margin-right:7px}
+.lane h3 .n{font-size:13px;font-weight:600;border-radius:10px;padding:1px 9px;background:var(--k);color:var(--g)}
+.em{display:flex;gap:10px;align-items:flex-start;border-radius:12px;padding:9px 10px;background:var(--s);margin-bottom:6px}
+.em .av{flex:none;width:34px;height:34px;border-radius:50%;background:var(--k);color:var(--g);display:grid;place-items:center;font-size:13px;font-weight:600}
+.em b{display:block;font-weight:600;font-size:15px}.em small{display:block;font-size:14px;color:var(--m)}
+.em .why{display:block;margin-top:3px;font-size:13px;font-weight:600;color:var(--a)}
+.em .q{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
+.chips{display:flex;gap:6px;flex-wrap:wrap;padding:0 2px 4px}.chips span{font-size:13px;font-weight:500;border-radius:10px;padding:6px 10px;background:var(--s);border:1.5px solid var(--k)}
+.lane .more{font-size:14px;color:var(--m);padding:6px 4px;min-height:36px}
+
+/* ---------- Notes ---------- */
+.srch{display:flex;align-items:center;gap:8px;padding:0 14px;margin-bottom:12px}
+.srch svg{width:18px;height:18px;color:var(--m);flex:none}
+.srch input{background:transparent;border:0;padding:12px 0}
+.plant{display:flex;align-items:center;gap:6px;padding:10px 14px 10px 6px;margin-bottom:14px;background:linear-gradient(180deg,var(--c2),var(--s))}
+.plant svg{width:150px;height:180px;flex:none}
+.plant .ct{flex:1;text-align:center}
+.plant .ct b{display:block;font-size:42px;font-weight:600;line-height:1}
+.plant .ct small{display:block;font-size:14px;color:var(--m);margin:4px 0 10px}
+.lg{display:inline-flex;flex-direction:column;gap:5px;font-size:13px;color:var(--m);align-items:flex-start}
+.lg span{display:flex;align-items:center;gap:6px}.lg i{width:12px;height:12px;border-radius:3px 9px;background:var(--lf)}
+.nt{border-radius:16px;padding:12px 14px;margin-bottom:8px;background:var(--c);display:flex;gap:8px}
+.nt>div{flex:1}.nt p{margin:0;font-size:15px;white-space:pre-wrap;overflow-wrap:anywhere}
+.nt p:first-line{font-weight:600}
+.nt small{display:block;font-size:13px;color:var(--m);margin-top:6px}
+.nt .x{flex:none;width:36px;height:36px;border-radius:10px;color:var(--m);display:grid;place-items:center}.nt .x svg{width:18px;height:18px}
+.newnote{padding:12px;margin-bottom:12px;display:none}.newnote.on{display:block}
+.newnote .row{display:flex;gap:8px;justify-content:flex-end;margin-top:8px}
+
+/* ---------- Sheets (mic, settings) ---------- */
+.dimmed{position:fixed;inset:0;background:var(--dim);z-index:30;opacity:0;pointer-events:none;transition:opacity .2s}
+.dimmed.on{opacity:1;pointer-events:auto}
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:31;max-width:480px;margin:0 auto;background:var(--s);border-radius:30px 30px 0 0;padding:12px 20px max(24px,env(safe-area-inset-bottom));transform:translateY(105%);transition:transform .25s,visibility 0s .25s;visibility:hidden;max-height:92vh;overflow:auto}
+.sheet.on{transform:none;visibility:visible;transition:transform .25s}
+.grab{width:40px;height:5px;border-radius:3px;background:var(--s2);margin:0 auto 12px}
+.sheet h2{font-size:20px;font-weight:600;margin:0 0 6px}
+.mic .l{font-size:14px;color:var(--m);margin:4px 0 8px;text-align:center}
+.mic .said{font-size:21px;font-weight:500;line-height:1.3;margin:0 0 12px;text-align:center;min-height:1.3em}
+.wave{display:flex;align-items:center;justify-content:center;gap:4px;height:40px;margin-bottom:12px;opacity:.25}
+.wave.on{opacity:1}
+.wave i{width:5px;border-radius:3px;background:var(--a);height:var(--h)}
+.wave.on i{animation:w 1s ease-in-out infinite alternate}.wave i:nth-child(2n){animation-delay:.3s}.wave i:nth-child(3n){animation-delay:.55s}
+@keyframes w{to{transform:scaleY(.35)}}
+.bigmic{width:78px;height:78px;border-radius:50%;margin:0 auto 14px;background:var(--a);color:var(--ona);display:grid;place-items:center;box-shadow:0 0 0 10px color-mix(in srgb,var(--a) 20%,transparent)}
+.bigmic svg{width:32px;height:32px}
+.bigmic.on{animation:ring 1.2s ease-in-out infinite}
+@keyframes ring{50%{box-shadow:0 0 0 18px color-mix(in srgb,var(--a) 12%,transparent)}}
+.typeit{display:flex;gap:8px}.typeit input{flex:1}
+.got{background:var(--s2);border-radius:18px;padding:12px 14px;margin-top:12px}
+.got small{font-size:14px;color:var(--m)}
+.got .r{display:flex;gap:8px;margin-top:10px}.got .r .btn{flex:1}
+.seg{display:flex;background:var(--s2);border-radius:14px;padding:4px;gap:4px}
+.seg button{flex:1;min-height:40px;border-radius:10px;font-size:15px;color:var(--m)}
+.seg button.on{background:var(--s);color:var(--t);font-weight:600;box-shadow:var(--sh)}
+.set-sec{margin-top:18px;padding-top:14px;border-top:1px solid var(--ln)}
+.set-sec h3{font-size:16px;margin:0 0 4px}
+.small{font-size:13px;color:var(--m)}
+.dfres{font-size:14px;margin-top:8px}
+a{color:var(--p)}
+
+/* ================= CALENDAR (full screen) ================= */
+:root,.t-dark{--cb-blue:#7cc4ff;--cb-orange:#ffb38a;--cb-pink:#ff8fb1;--cb-green:#6fd39a;--cb-purple:#b8b0ff;--red:#ff6b5e}
+.t-light{--cb-blue:#3a6fd1;--cb-orange:#e8703f;--cb-pink:#d9487a;--cb-green:#2e9e57;--cb-purple:#7b6cd9;--red:#d9362b}
+@media (prefers-color-scheme: light){:root:not(.t-dark){--cb-blue:#3a6fd1;--cb-orange:#e8703f;--cb-pink:#d9487a;--cb-green:#2e9e57;--cb-purple:#7b6cd9;--red:#d9362b}}
+.calview{position:fixed;inset:0;z-index:26;background:var(--g);display:flex;flex-direction:column}
+.calview[hidden]{display:none}
+.calview .in{max-width:480px;width:100%;margin:0 auto;display:flex;flex-direction:column;flex:1;min-height:0;padding:max(10px,env(safe-area-inset-top)) 14px 0}
+.chead{display:flex;align-items:center;gap:6px;margin-bottom:8px}
+.chead h2{flex:1;font-size:20px;font-weight:600;margin:0;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.back{display:flex;align-items:center;gap:2px;color:var(--p);font-weight:600;min-height:44px;padding-right:6px}
+.back svg{width:20px;height:20px}
+.today-b{color:var(--p);font-weight:600;min-height:44px;padding:0 8px}
+.plus{width:44px;height:44px;border-radius:14px;background:var(--a);color:var(--ona);display:grid;place-items:center}
+.plus svg{width:22px;height:22px}
+.cnav{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.cnav .seg{flex:1}
+.cnav .ar{width:40px;height:40px;border-radius:12px;background:var(--s);display:grid;place-items:center;color:var(--m)}
+.cnav .ar svg{width:18px;height:18px}
+.cbody{flex:1;min-height:0;display:flex;flex-direction:column}
+.evc{--col:var(--cb-blue)}
+.evc.orange{--col:var(--cb-orange)}.evc.pink{--col:var(--cb-pink)}.evc.green{--col:var(--cb-green)}.evc.purple{--col:var(--cb-purple)}
+
+/* day view */
+.dstrip{display:flex;gap:4px;margin-bottom:8px}
+.dstrip button{flex:1;border-radius:12px;padding:5px 0;font-size:12px;color:var(--m);line-height:1.25;min-height:50px}
+.dstrip b{display:block;font-size:16px;color:var(--t);font-weight:600}
+.dstrip .sel{background:var(--p);color:var(--on)}.dstrip .sel b{color:var(--on)}
+.dstrip .td:not(.sel) b{color:var(--a)}
+.dtitle{font-size:15px;color:var(--m);margin:0 0 6px}
+.allday{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:6px}
+.allday button,.remrow button{font-size:13px;font-weight:600;border-radius:10px;padding:5px 10px;background:color-mix(in srgb,var(--col) 24%,var(--s));border-left:4px solid var(--col);color:var(--t);text-align:left}
+.remrow{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:6px}
+.remrow button{--col:var(--wilt);background:var(--c1)}
+.dgrid{flex:1;min-height:0;overflow-y:auto;position:relative;border-top:1px solid var(--ln);overscroll-behavior:contain;padding-bottom:30px}
+.hours{position:relative;height:1344px;margin-left:46px}
+.hr{position:absolute;left:-46px;right:0;height:0;border-top:1px solid var(--ln)}
+.hr span{position:absolute;left:0;top:-9px;font-size:12px;color:var(--m);width:40px;text-align:right}
+.nowline{position:absolute;left:-6px;right:0;height:2px;background:var(--red);z-index:3;pointer-events:none}
+.nowline::before{content:"";position:absolute;left:-4px;top:-4px;width:10px;height:10px;border-radius:50%;background:var(--red)}
+.gev{position:absolute;z-index:2;border-radius:8px;padding:3px 6px;overflow:hidden;font-size:13px;line-height:1.25;cursor:pointer;touch-action:pan-y;
+  background:color-mix(in srgb,var(--col) 26%,var(--g));border-left:4px solid var(--col);color:var(--t);user-select:none;-webkit-user-select:none}
+.gev b{font-weight:600;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.gev small{display:block;color:var(--m);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gev.drag{z-index:5;box-shadow:0 10px 24px -8px #000a;opacity:.95;outline:2px solid var(--col)}
+.gev .rs{position:absolute;left:0;right:0;bottom:0;height:14px;cursor:ns-resize;touch-action:none}
+.gev .rs::after{content:"";position:absolute;left:50%;bottom:4px;width:22px;height:4px;margin-left:-11px;border-radius:2px;background:var(--col);opacity:.8}
+.gev.short .rs::after{display:none}
+.ghost{position:absolute;left:0;right:4px;z-index:1;border-radius:8px;border:2px dashed var(--p);pointer-events:none;font-size:12px;color:var(--p);padding:2px 6px}
+.dragtip{position:fixed;z-index:50;background:var(--t);color:var(--g);font-size:13px;font-weight:600;padding:4px 8px;border-radius:8px;pointer-events:none}
+
+/* month view */
+.mgrid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:2px;margin-bottom:10px}
+.mgrid .wd{font-size:12px;color:var(--m);text-align:center;padding:2px 0 6px}
+.mgrid button{min-height:52px;border-radius:12px;display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 0 4px;font-size:15px;color:var(--t)}
+.mgrid button.out{color:var(--m);opacity:.45}
+.mgrid button span{width:30px;height:30px;display:grid;place-items:center;border-radius:50%}
+.mgrid button.td span{color:var(--a);font-weight:600}
+.mgrid button.sel span{background:var(--p);color:var(--on);font-weight:600}
+.mgrid .dts{display:flex;gap:2px;height:6px}.mgrid .dts i{width:6px;height:6px;border-radius:50%;background:var(--col)}
+.mlist{flex:1;min-height:0;overflow-y:auto;padding-bottom:30px}
+.mlist h4,.alist h4{font-size:14px;color:var(--m);margin:10px 2px 6px;font-weight:500}
+.lev{display:flex;gap:10px;align-items:stretch;width:100%;text-align:left;padding:9px 10px;border-radius:14px;background:var(--s);margin-bottom:6px;box-shadow:var(--sh)}
+.lev .bar{width:4px;border-radius:2px;background:var(--col);flex:none}
+.lev .tm{width:52px;flex:none;font-size:13px;color:var(--m);line-height:1.35}
+.lev b{display:block;font-weight:600;font-size:15px}.lev small{display:block;font-size:13px;color:var(--m)}
+.lev .rp{display:inline-block;margin-left:6px;opacity:.7;vertical-align:-2px}.lev .rp svg{width:13px;height:13px}
+.alist{flex:1;min-height:0;overflow-y:auto;padding-bottom:30px}
+
+/* event editor (iOS-style) */
+.edhead{display:flex;justify-content:space-between;align-items:center;margin:-2px 0 10px}
+.edhead h2{margin:0;font-size:17px}
+.edhead button{min-height:44px;font-weight:600;color:var(--p);padding:0 4px}
+.edhead button.go{color:var(--a)}
+.edhead button[disabled]{opacity:.4}
+.grp{background:var(--s2);border-radius:14px;margin-bottom:12px;overflow:hidden}
+.grp>div{display:flex;align-items:center;gap:8px;padding:8px 12px;min-height:48px;border-bottom:1px solid var(--ln)}
+.grp>div:last-child{border-bottom:0}
+.grp>div>label{flex:1;font-size:15px}
+.grp input[type=text]{background:transparent;border:0;padding:6px 0}
+.grp input[type=date],.grp input[type=time],.grp select{width:auto;background:var(--s);border:0;border-radius:10px;padding:7px 9px;font-size:15px;color:var(--t);font-family:inherit}
+.grp input.bad{color:var(--red);text-decoration:line-through}
+.grp textarea{background:transparent;border:0;padding:4px 0;min-height:70px}
+.sw2{position:relative;width:52px;height:32px;border-radius:16px;background:var(--s);flex:none;transition:background .2s}
+.sw2::after{content:"";position:absolute;left:3px;top:3px;width:26px;height:26px;border-radius:50%;background:#fff;box-shadow:0 1px 3px #0005;transition:left .2s}
+.sw2[aria-checked=true]{background:var(--cb-green)}.sw2[aria-checked=true]::after{left:23px}
+.cols{display:flex;gap:10px}
+.cols button{width:32px;height:32px;border-radius:50%;background:var(--col);border:3px solid transparent}
+.cols button[aria-pressed=true]{border-color:var(--t)}
+.delbtn{width:100%;min-height:48px;border-radius:14px;background:var(--s2);color:var(--red);font-weight:600;margin-top:4px}
+.scope .btn{width:100%;margin-top:8px;min-height:48px}
+.scope p{color:var(--m);font-size:15px;margin:0 0 6px;text-align:center}
+
+/* alert banner */
+.alertb{position:fixed;z-index:60;left:50%;top:max(12px,env(safe-area-inset-top));transform:translate(-50%,-150%);width:min(440px,94vw);background:var(--s);color:var(--t);
+  border-radius:18px;padding:12px 14px;box-shadow:0 18px 40px -12px #000c;border:1px solid var(--ln);display:flex;gap:12px;align-items:center;transition:transform .3s}
+.alertb.on{transform:translate(-50%,0)}
+.alertb .ic{width:40px;height:40px;border-radius:12px;background:var(--a);color:var(--ona);display:grid;place-items:center;flex:none}
+.alertb .ic svg{width:22px;height:22px}
+.alertb b{display:block;font-weight:600}.alertb small{color:var(--m);font-size:14px}
+.alertb>div{flex:1}
+.alertb button{font-weight:600;color:var(--p);min-height:40px;padding:0 6px}
+
+.blk.ev{cursor:pointer;background:color-mix(in srgb,var(--c) 22%,var(--s));box-shadow:inset 4px 0 0 var(--c)}.blk.ev.now{background:var(--p)}
+@media (max-width:359px){#cal-title{font-size:17px}.grp>div.dt{flex-wrap:wrap;row-gap:6px}.grp>div.dt>label{flex-basis:100%}}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- ================= HOME ================= -->
+  <section class="view on" id="v-home" aria-label="Home">
+    <div class="top"><h1 id="hello">Hi!</h1><div class="r"><span class="pill" id="h-lvl">Lv 1</span>
+      <button class="ib" id="b-cal" aria-label="Open calendar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4.5" width="18" height="16.5" rx="3"/><path d="M3 9.5h18M8 2.5v4M16 2.5v4"/><path d="M7.5 13.5h2M11 13.5h2M14.5 13.5h2M7.5 17h2M11 17h2"/></svg></button><button class="ib" id="b-settings" aria-label="Settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3h0a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8v0a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button></div></div>
+    <div class="wkh"><span id="h-month"></span><div class="nav"><button id="wk-prev" aria-label="Previous week"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="m15 6-6 6 6 6"/></svg></button><button id="wk-next" aria-label="Next week"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="m9 6 6 6-6 6"/></svg></button></div></div>
+    <div class="wk" id="h-week"></div>
+    <div class="bub" id="h-bub" hidden><i></i><p id="h-buddy"></p></div>
+    <div id="h-blocks"><div class="skel"></div><div class="skel"></div><div class="skel"></div></div>
+  </section>
+
+  <!-- ================= NOW ================= -->
+  <section class="view" id="v-now" aria-label="Now">
+    <div class="top"><h1>Right now</h1><span class="pill" id="n-xp">0 XP</span></div>
+    <div class="xp"><div class="bar"><i id="n-bar" style="width:0"></i></div><div class="lb"><span id="n-lvl">Level 1</span><span id="n-left"></span></div></div>
+    <div id="n-body"><div class="skel" style="height:320px;margin-top:30px"></div></div>
+  </section>
+
+  <!-- ================= INBOX ================= -->
+  <section class="view" id="v-inbox" aria-label="Inbox">
+    <div class="top"><h1>Inbox</h1><div class="r"><span class="pill" id="i-new"></span>
+      <button class="ib" id="i-refresh" aria-label="Check mail again"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><path d="M21 3v5h-5"/></svg></button></div></div>
+    <p class="sub" id="i-sub">&nbsp;</p>
+    <div id="i-body"><div class="skel" style="height:140px"></div><div class="skel" style="height:120px"></div></div>
+  </section>
+
+  <!-- ================= NOTES ================= -->
+  <section class="view" id="v-notes" aria-label="Notes">
+    <div class="top"><h1>Notes</h1><button class="pill" id="nt-new">+ New</button></div>
+    <div class="card newnote" id="nt-form"><textarea id="nt-text" placeholder="Write a note. The first line is the title."></textarea>
+      <div class="row"><button class="btn g sm" id="nt-cancel">Cancel</button><button class="btn a sm" id="nt-save">Save note</button></div></div>
+    <div class="card srch"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg><input type="text" id="nt-q" placeholder="Search notes" aria-label="Search notes"></div>
+    <div class="card plant" id="nt-plant"></div>
+    <div id="nt-list"><div class="skel"></div><div class="skel"></div></div>
+  </section>
+</div>
+
+<!-- tab bar + mic -->
+<button class="fab" id="fab" aria-label="Say a reminder or note"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="9" y="3" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></button>
+<nav class="tabs"><div class="in">
+  <button data-v="home" class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16"/></svg>Home</button>
+  <button data-v="now"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="4" width="14" height="16" rx="3"/></svg>Now</button>
+  <button data-v="inbox"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="m3 8 9 6 9-6"/></svg>Inbox</button>
+  <button data-v="notes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 3h10l4 4v14H5z"/><path d="M9 12h6M9 16h4"/></svg>Notes</button>
+</div></nav>
+
+<div class="dimmed" id="dim"></div>
+
+<!-- mic sheet -->
+<div class="sheet mic" id="s-mic" role="dialog" aria-label="Say it">
+  <div class="grab"></div>
+  <p class="l" id="m-state">Tap the button and say it</p>
+  <p class="said" id="m-said"></p>
+  <div class="wave" id="m-wave"></div>
+  <button class="bigmic" id="m-btn" aria-label="Start listening"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="9" y="3" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></button>
+  <div class="typeit"><input type="text" id="m-text" placeholder='Or type: "buy bread tomorrow 9am"' aria-label="Type it"><button class="btn p" id="m-check">Check</button></div>
+  <div id="m-result"></div>
+</div>
+
+<!-- settings sheet -->
+<div class="sheet" id="s-set" role="dialog" aria-label="Settings">
+  <div class="grab"></div>
+  <h2>Settings</h2>
+  <label class="f" for="st-name">Your name</label><input type="text" id="st-name" placeholder="For the greeting">
+  <label class="f">Look</label><div class="seg" id="st-theme"><button data-t="auto">Auto</button><button data-t="dark">Dark</button><button data-t="light">Light</button></div>
+  <label class="f" for="st-lang">Voice language</label><select id="st-lang"><option value="hu-HU">Magyar</option><option value="en-US">English</option></select>
+  <div class="set-sec"><h3>AI</h3><p class="small">Rules is free and instant. Gemini is smarter and also writes the buddy message, using your free key.</p>
+    <label class="f" for="st-engine">Engine</label><select id="st-engine"><option value="rules">Rules (built-in)</option><option value="gemini">Gemini</option></select>
+    <label class="f" for="st-model">Gemini model</label><input type="text" id="st-model">
+    <label class="f" for="st-key">Gemini key</label><input type="password" id="st-key" placeholder="Paste to change, or - to remove">
+    <div style="margin-top:10px"><button class="btn a sm" id="st-save">Save AI settings</button></div>
+    <p class="small" id="st-info"></p></div>
+  <div class="set-sec"><h3>Date finder tester</h3><p class="small">Paste any text to see which dates it finds. Changes nothing.</p>
+    <textarea id="st-df" style="min-height:70px" placeholder="Meeting next Tuesday at 3pm"></textarea>
+    <div style="margin-top:8px"><button class="btn g sm" id="st-dfgo">Find dates</button></div><div class="dfres" id="st-dfres"></div></div>
+  <div class="set-sec"><h3>Alerts</h3><p class="small">Events with an alert pop up here while the app is open. Email alerts also reach you when it's closed.</p>
+    <div class="grp"><div><span style="flex:1">Also email me alerts</span><button class="sw2" id="st-mail" role="switch" aria-checked="false" aria-label="Also email me alerts"></button></div></div>
+    <div style="margin-top:8px"><button class="btn g sm" id="st-notif">Allow phone notifications</button></div></div>
+  <div class="set-sec"><h3>Connection</h3><div class="small" id="st-status">Loading…</div></div>
+  <div style="margin-top:18px"><button class="btn g" id="st-close" style="width:100%">Close</button></div>
+</div>
+
+<!-- ============ full calendar ============ -->
+<div class="calview" id="cal" hidden role="dialog" aria-label="Calendar"><div class="in">
+  <div class="chead">
+    <button class="back" id="cal-close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="m15 6-6 6 6 6"/></svg>Home</button>
+    <h2 id="cal-title"></h2>
+    <button class="today-b" id="cal-today">Today</button>
+    <button class="plus" id="cal-add" aria-label="New event"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M12 5v14M5 12h14"/></svg></button>
+  </div>
+  <div class="cnav">
+    <button class="ar" id="cal-prev" aria-label="Previous"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="m15 6-6 6 6 6"/></svg></button>
+    <div class="seg" id="cal-mode"><button data-m="day">Day</button><button data-m="month">Month</button><button data-m="list">List</button></div>
+    <button class="ar" id="cal-next" aria-label="Next"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="m9 6 6 6-6 6"/></svg></button>
+  </div>
+  <div class="cbody" id="cal-body"></div>
+</div></div>
+
+<!-- event editor -->
+<div class="sheet" id="s-ev" role="dialog" aria-label="Event">
+  <div class="grab"></div>
+  <div class="edhead"><button id="ev-cancel">Cancel</button><h2 id="ev-h">New Event</h2><button class="go" id="ev-save">Add</button></div>
+  <div class="grp"><div><input type="text" id="ev-title" placeholder="Title" aria-label="Title"></div><div><input type="text" id="ev-loc" placeholder="Location" aria-label="Location"></div></div>
+  <div class="grp">
+    <div><label for="ev-allday">All-day</label><button class="sw2" id="ev-allday" role="switch" aria-checked="false"></button></div>
+    <div class="dt"><label>Starts</label><input type="date" id="ev-sd" aria-label="Start date"><input type="time" id="ev-st" step="300" aria-label="Start time"></div>
+    <div class="dt"><label>Ends</label><input type="date" id="ev-ed" aria-label="End date"><input type="time" id="ev-et" step="300" aria-label="End time"></div>
+  </div>
+  <div class="grp">
+    <div><label for="ev-rep">Repeat</label><select id="ev-rep"><option value="none">Never</option><option value="daily">Every Day</option><option value="weekdays">Every Weekday</option><option value="weekly">Every Week</option><option value="biweekly">Every 2 Weeks</option><option value="monthly">Every Month</option><option value="yearly">Every Year</option></select></div>
+    <div id="ev-endrep-row"><label for="ev-endrep">End Repeat</label><select id="ev-endrep"><option value="never">Never</option><option value="on">On Date</option></select><input type="date" id="ev-until" aria-label="End repeat date"></div>
+  </div>
+  <div class="grp">
+    <div><label for="ev-alert">Alert</label><select id="ev-alert"><option value="">None</option><option value="0">At time of event</option><option value="5">5 minutes before</option><option value="10">10 minutes before</option><option value="15">15 minutes before</option><option value="30">30 minutes before</option><option value="60">1 hour before</option><option value="120">2 hours before</option><option value="1440">1 day before</option><option value="2880">2 days before</option><option value="10080">1 week before</option></select></div>
+    <div><label>Colour</label><div class="cols" id="ev-cols"></div></div>
+  </div>
+  <div class="grp"><div><textarea id="ev-notes" placeholder="Notes" aria-label="Notes"></textarea></div></div>
+  <button class="delbtn" id="ev-del">Delete Event</button>
+</div>
+
+<!-- "this event only / future events" chooser (like iPhone) -->
+<div class="sheet scope" id="s-scope" role="dialog" aria-label="Repeating event">
+  <div class="grab"></div>
+  <p id="sc-q">This is a repeating event.</p>
+  <button class="btn g" id="sc-this">Save for this event only</button>
+  <button class="btn g" id="sc-future">Save for future events</button>
+  <button class="btn g" id="sc-cancel" style="color:var(--m)">Cancel</button>
+</div>
+
+<div class="alertb" id="alertb" role="alert"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 8 3 8H3s3-1 3-8"/><path d="M10 21h4"/></svg></span><div><b id="al-t"></b><small id="al-s"></small></div><button id="al-open">Open</button><button id="al-ok">OK</button></div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(function () {
+  // ---------- helpers ----------
+  var $ = function (id) { return document.getElementById(id); };
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+  function store(k, v) { try { if (v === undefined) return localStorage.getItem(k); localStorage.setItem(k, v); } catch (e) { return null; } }
+  function call(fn) {
+    var args = [].slice.call(arguments, 1);
+    return new Promise(function (ok, bad) {
+      var r = google.script.run.withSuccessHandler(ok).withFailureHandler(function (e) { bad(e); });
+      r[fn].apply(r, args);
+    });
+  }
+  var toastT;
+  function toast(msg, opts) {
+    opts = opts || {};
+    var t = $('toast');
+    t.className = 'toast on' + (opts.err ? ' err' : '');
+    t.innerHTML = '<span>' + esc(msg) + '</span>' + (opts.action ? '<button id="toast-act">' + esc(opts.action) + '</button>' : '');
+    if (opts.action) $('toast-act').onclick = function () { t.className = 'toast'; opts.onAction(); };
+    clearTimeout(toastT); toastT = setTimeout(function () { t.className = 'toast'; }, opts.ms || (opts.err ? 6000 : 2600));
+  }
+  function fail(e) { toast('Something went wrong: ' + (e && e.message ? e.message : e), { err: true }); }
+  function xpFly(n) {
+    if (!n) return;
+    var d = document.createElement('div'); d.className = 'xpfly'; d.textContent = '+' + n + ' XP';
+    document.body.appendChild(d); setTimeout(function () { d.remove(); }, 1300);
+  }
+  var LOC = navigator.language || 'en-GB';
+  function hm(iso) { return new Date(iso).toLocaleTimeString(LOC, { hour: '2-digit', minute: '2-digit' }); }
+  function dayName(iso, opt) { return new Date(iso).toLocaleDateString(LOC, opt || { weekday: 'short' }); }
+  function sameDay(a, b) { a = new Date(a); b = new Date(b); return a.toDateString() === b.toDateString(); }
+  function whenLabel(iso, allDay) {
+    var d = new Date(iso), now = new Date();
+    var tmr = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+    var day = sameDay(d, now) ? 'Today' : sameDay(d, tmr) ? 'Tomorrow' : d.toLocaleDateString(LOC, { weekday: 'short', day: 'numeric', month: 'short' });
+    return allDay ? day : day + ' ' + hm(iso);
+  }
+  function initials(n) { var p = String(n || '?').replace(/[^\p{L}\s]/gu, '').trim().split(/\s+/); return ((p[0] || '?')[0] + (p[1] ? p[1][0] : '')).toUpperCase(); }
+  var ICON_CHECK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="m5 12 5 5 9-10"/></svg>';
+
+  // ---------- instant data: last answer is shown at once, fresh data replaces it ----------
+  var cache = {};
+  try { var saved = JSON.parse(store('cache') || 'null'); if (saved && saved.day === new Date().toDateString()) cache = saved.data || {}; } catch (e) {}
+  function remember(k, v) { cache[k] = v; try { store('cache', JSON.stringify({ day: new Date().toDateString(), data: cache })); } catch (e) {} }
+
+  // ---------- theme ----------
+  function applyTheme(t) {
+    document.documentElement.className = t === 'dark' ? 't-dark' : t === 'light' ? 't-light' : '';
+    [].forEach.call(document.querySelectorAll('#st-theme button'), function (b) { b.classList.toggle('on', b.dataset.t === t); });
+  }
+  var theme = store('theme') || 'auto'; applyTheme(theme);
+
+  // ---------- tabs ----------
+  var current = 'home';
+  var loaders = {};
+  function show(v) {
+    current = v;
+    [].forEach.call(document.querySelectorAll('.view'), function (s) { s.classList.toggle('on', s.id === 'v-' + v); });
+    [].forEach.call(document.querySelectorAll('.tabs button'), function (b) { b.classList.toggle('on', b.dataset.v === v); });
+    window.scrollTo(0, 0);
+    if (loaders[v]) loaders[v]();
+  }
+  [].forEach.call(document.querySelectorAll('.tabs button'), function (b) { b.onclick = function () { show(b.dataset.v); }; });
+
+  // ================= HOME =================
+  var homeDay = null; // ISO of selected day (null = today)
+  function hello() { var n = store('name'); $('hello').textContent = n ? 'Hi ' + n : 'Hi!'; }
+  hello();
+  // Home keeps whole weeks on the phone, so tapping another day shows it at once;
+  // the week is refreshed in the background and only redrawn if something changed.
+  var homeDays = {}, weekLoading = {}, homeShown = '';
+  function dKey(d) { d = new Date(d); return d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate(); }
+  function wKey(d) { return dKey(monday(new Date(d))); }
+  function keepWeek(list) {
+    list.forEach(function (h) { homeDays[dKey(h.day)] = h; });
+    var lo = addD(monday(new Date()), -14), hi = addD(monday(new Date()), 21);
+    Object.keys(homeDays).forEach(function (k) { var d = new Date(homeDays[k].day); if (d < lo || d >= hi) delete homeDays[k]; });
+    remember('days', homeDays);
+  }
+  function fetchWeek(d) {
+    var k = wKey(d);
+    if (weekLoading[k]) return weekLoading[k];
+    var p = weekLoading[k] = call('apiHomeWeek', new Date(d).toISOString()).then(function (list) { delete weekLoading[k]; keepWeek(list); return list; },
+      function (e) { delete weekLoading[k]; throw e; });
+    return p;
+  }
+  function showHome(h) { var sig = JSON.stringify(h); if (sig === homeShown) return; homeShown = sig; renderHome(h); }
+  function loadHome(dayIso) {
+    if (dayIso !== undefined) homeDay = dayIso;
+    var day = homeDay ? new Date(homeDay) : new Date(), key = dKey(day), asked = homeDay;
+    if (homeDays[key]) showHome(homeDays[key]); else $('h-blocks').style.opacity = '.5';
+    return fetchWeek(day).then(function () {
+      $('h-blocks').style.opacity = '';
+      if (asked !== homeDay) return; // user tapped another day meanwhile
+      var h = homeDays[key]; if (!h) return;
+      if (!homeDay) remember('home', h);
+      showHome(h);
+      // get the weeks before and after ready too
+      [-7, 7].forEach(function (n) { var o = addD(day, n); if (!homeDays[dKey(o)]) fetchWeek(o).catch(function () {}); });
+    }).catch(function (e) { $('h-blocks').style.opacity = ''; fail(e); });
+  }
+  loaders.home = function () { loadHome(); };
+  function renderHome(h) {
+    $('h-lvl').textContent = 'Lv ' + h.stats.level;
+    $('h-month').textContent = new Date(h.week[3].date).toLocaleDateString(LOC, { month: 'long', year: 'numeric' });
+    $('h-week').innerHTML = h.week.map(function (d) {
+      var sel = sameDay(d.date, h.day);
+      return '<button data-d="' + esc(d.date) + '" class="' + (sel ? 'sel ' : '') + (d.today ? 'td' : '') + '" aria-label="' + esc(dayName(d.date, { weekday: 'long', day: 'numeric', month: 'long' })) + ', ' + d.count + ' things">' +
+        esc(dayName(d.date)) + '<b>' + new Date(d.date).getDate() + '</b><i class="' + (d.count ? '' : 'no') + '"></i></button>';
+    }).join('');
+    [].forEach.call($('h-week').children, function (b) { b.onclick = function () { loadHome(sameDay(b.dataset.d, new Date()) ? null : b.dataset.d); }; });
+    $('wk-prev').onclick = function () { var d = new Date(h.day); d.setDate(d.getDate() - 7); loadHome(d.toISOString()); };
+    $('wk-next').onclick = function () { var d = new Date(h.day); d.setDate(d.getDate() + 7); loadHome(d.toISOString()); };
+    $('h-bub').hidden = !h.buddy; $('h-buddy').textContent = h.buddy;
+    if (!h.blocks.length) {
+      $('h-blocks').innerHTML = '<div class="empty">' + (h.isToday ? 'Nothing planned today. Tap the orange button to add something.' : 'Nothing planned on ' + esc(dayName(h.day, { weekday: 'long' })) + '.') + '</div>';
+      return;
+    }
+    $('h-blocks').innerHTML = '<div class="ag">' + h.blocks.map(function (b, i) {
+      var tm = b.type === 'suggestion' && !b.onDay ? 'Email' : b.allDay ? 'All day' : hm(b.start);
+      var cls = 'blk' + (b.now ? ' now' : '') + (b.past ? ' past' : '') + (b.missed ? ' missed' : '');
+      var tint = b.type === 'reminder' ? 'var(--c1)' : b.type === 'suggestion' ? 'var(--c3)' : 'var(--cb-' + (b.color || 'blue') + ')';
+      if (b.type === 'event') cls += ' ev';
+      var inner;
+      if (b.type === 'reminder') {
+        inner = '<button class="chk" data-rem="' + esc(b.id) + '" aria-label="Mark ' + esc(b.title) + ' done">' + ICON_CHECK + '</button><div>' + esc(b.title) +
+          '<small>' + (b.missed ? 'missed, finish it to save your leaf' : 'reminder · +10 XP') + '</small></div>';
+      } else if (b.type === 'suggestion') {
+        inner = '<div>' + esc(b.title) + '<small>' + esc(whenLabel(b.start, b.allDay)) + (b.from ? ' · from ' + esc(b.from) : '') + '</small>' +
+          '<div class="q"><button class="btn a sm" data-add="' + esc(b.id) + '">Add</button><button class="btn o sm" data-no="' + esc(b.id) + '">No</button></div></div>';
+      } else {
+        var extra = b.location ? esc(b.location) : (!b.allDay ? hm(b.start) + '–' + hm(b.end) : '');
+        inner = '<div>' + esc(b.title) + (extra ? '<small>' + extra + '</small>' : '') + '</div>';
+      }
+      return '<span class="tm">' + esc(tm) + '</span><div class="' + cls + '"' + (b.type === 'event' ? ' data-ev="' + i + '" role="button" tabindex="0"' : '') + ' style="--c:' + tint + '">' + inner + '</div>';
+    }).join('') + '</div>';
+    var byId = {}; h.blocks.forEach(function (b) { if (b.type === 'suggestion') byId[b.id] = b; });
+    [].forEach.call($('h-blocks').querySelectorAll('[data-ev]'), function (x) { x.onclick = x.onkeydown = function (k) { if (k.type === 'keydown' && k.key !== 'Enter') return; openEditor(h.blocks[+x.dataset.ev]); }; });
+    [].forEach.call($('h-blocks').querySelectorAll('[data-rem]'), function (x) { x.onclick = function () { doneReminder(x.dataset.rem, x); }; });
+    [].forEach.call($('h-blocks').querySelectorAll('[data-add]'), function (x) { x.onclick = function () { addSuggestion(byId[x.dataset.add], x); }; });
+    [].forEach.call($('h-blocks').querySelectorAll('[data-no]'), function (x) { x.onclick = function () { x.disabled = true; var bl = x.closest('.blk'); if (bl) dust(bl); call('apiDismissSuggestion', x.dataset.no).then(function () { toast('Okay, skipped'); loadHome(); }).catch(fail); }; });
+  }
+  function doneReminder(id, btn) {
+    if (btn) { btn.disabled = true; var blk = btn.closest('.blk'); if (blk) { blk.style.transition = 'opacity .3s'; blk.style.opacity = '.3'; } }
+    call('apiCompleteReminder', id).then(function () { xpFly(10); toast('Done. A new leaf grew'); loaders[current](); }).catch(fail);
+  }
+  function addSuggestion(s, btn) {
+    if (btn) { btn.disabled = true; var q = btn.closest('.q'); if (q) q.innerHTML = '<span class="small">Adding…</span>'; }
+    call('apiAcceptSuggestion', s.id, s.title, s.start, s.end, s.allDay).then(function (r) { xpFly(r.points); toast('Added to your calendar'); loaders[current](); }).catch(fail);
+  }
+  $('b-settings').onclick = function () { openSheet('s-set'); loadSettings(); };
+
+  // ================= NOW =================
+  var nowCards = [];
+  loaders.now = function () { if (cache.now) renderNow(cache.now); call('apiNow').then(function (r) { if (!busy) { remember('now', r); renderNow(r); } }).catch(fail); };
+  function renderStats(st) {
+    $('n-xp').textContent = st.xp + ' XP';
+    $('n-bar').style.width = Math.round(st.xpInLevel / st.perLevel * 100) + '%';
+    $('n-lvl').textContent = 'Level ' + st.level;
+    $('n-left').textContent = (st.perLevel - st.xpInLevel) + ' XP to level ' + (st.level + 1);
+  }
+  function cardHtml(c) {
+    var tag, lines = [], acts;
+    if (c.type === 'event') { tag = '<span class="tag">' + (new Date(c.start) <= new Date() ? 'Happening now' : 'Up next · ' + hm(c.start)) + '</span>'; if (c.location) lines.push(c.location); lines.push(hm(c.start) + '–' + hm(c.end)); }
+    if (c.type === 'reminder') { tag = c.missed ? '<span class="tag miss">Missed · was ' + hm(c.start) + '</span>' : '<span class="tag">Reminder · ' + hm(c.start) + '</span>'; if (c.missed) lines.push('Finish it now and its leaf turns green again.'); }
+    if (c.type === 'suggestion') { tag = '<span class="tag mail">Found in an email</span>'; lines.push(whenLabel(c.start, c.allDay)); if (c.from) lines.push('From ' + c.from); }
+    if (c.type === 'email') { tag = '<span class="tag mail">Email needs you</span>'; lines.push('From ' + c.from); if (c.why) lines.push('Why: ' + c.why); }
+    var label = c.type === 'suggestion' ? 'Add to calendar' : c.type === 'email' ? 'Done' : c.type === 'reminder' ? 'Done' : 'Got it';
+    acts = '<div class="acts">' +
+      (c.type === 'suggestion' ? '<button class="btn p wide" data-act="done">' + label + '</button><button class="btn g" data-act="no">No</button>' : '') +
+      (c.type === 'email' ? '<a class="btn g" href="' + esc(c.link) + '" target="_blank" rel="noopener">Open</a>' : '') +
+      '<button class="btn g" data-act="later">Later</button>' + (c.type === 'suggestion' ? '' : '<button class="btn p" data-act="done">' + label + '</button>') + '</div>';
+    var t = String(c.title || ''); if (t.length > 90) t = t.slice(0, 87).trim() + '…';
+    lines = lines.map(function (l) { l = String(l); return l.length > 70 ? l.slice(0, 67).trim() + '…' : l; });
+    return tag + '<h2' + (t.length > 40 ? ' class="long"' : t.length > 16 ? ' class="mid"' : '') + ' title="' + esc(c.title) + '">' + esc(t) + '</h2>' + lines.map(function (l) { return '<p>' + esc(l) + '</p>'; }).join('') +
+      '<div class="rw">' + (c.boss ? 'Boss task · ' : '') + '+' + c.xp + ' XP</div>' + acts;
+  }
+  function renderNow(r, preview) {
+    renderStats(r.stats);
+    if (preview) { /* optimistic view while saving */ }
+    nowCards = r.cards;
+    if (!nowCards.length) {
+      $('n-body').innerHTML = '<div class="empty" style="padding-top:60px"><b style="font-size:22px;color:var(--t)">All clear</b><br>Nothing left for today. Your plant has ' + r.stats.plant.done + ' leaves.</div>';
+      return;
+    }
+    var c = nowCards[0];
+    var rest = nowCards.slice(1, 4).map(function (x) { return cut(x.title, 24); });
+    $('n-body').innerHTML = '<div class="stack">' + (nowCards.length > 2 ? '<div class="cd b2"></div>' : '') + (nowCards.length > 1 ? '<div class="cd b1"></div>' : '') +
+      '<div class="cd front" id="n-card">' + cardHtml(c) + '</div></div>' +
+      '<div class="swipehint"><span>← Later</span><span>' + (c.type === 'suggestion' ? 'Add' : 'Done') + ' →</span></div>' +
+      (rest.length ? '<p class="hint">' + (nowCards.length - 1) + ' more: ' + esc(rest.join(', ')) + (nowCards.length > 4 ? '…' : '') + '</p>' : '<p class="hint">Last one for today</p>') +
+      '<div class="dots">' + nowCards.slice(0, 6).map(function (x, i) { return '<i class="' + (i ? '' : 'on') + '"></i>'; }).join('') + '</div>';
+    var card = $('n-card');
+    [].forEach.call(card.querySelectorAll('[data-act]'), function (b) { b.onclick = function () { cardAct(c, b.dataset.act); }; });
+    swipe(card, function (dir) { cardAct(c, dir > 0 ? 'done' : 'later'); });
+  }
+  var busy = false;
+  function cardAct(c, act) {
+    if (busy) return; busy = true;
+    var card = $('n-card');
+    if (card && act === 'no') dust(card);
+    else if (card) { card.style.transform = 'translateX(' + (act === 'later' ? '-' : '') + '120%) rotate(' + (act === 'later' ? '-' : '') + '8deg)'; card.style.opacity = '0'; }
+    var fn = act === 'done' ? 'apiCardDone' : act === 'later' ? 'apiCardLater' : 'apiCardDismiss';
+    var before = +$('n-xp').textContent.replace(/\D/g, '') || 0;
+    // Show the next card right away; the server answer replaces it when it arrives.
+    setTimeout(function () {
+      if (!busy) return;
+      var rest = nowCards.filter(function (x) { return x.key !== c.key; });
+      if (act === 'later') rest.push(c);
+      var st = JSON.parse(JSON.stringify(cache.now ? cache.now.stats : { xp: 0, xpInLevel: 0, perLevel: 200, level: 1, plant: { done: 0, missed: 0, toGrow: 0 } }));
+      if (act === 'done') { st.xp += c.xp; st.xpInLevel = Math.min(st.perLevel, st.xpInLevel + c.xp); xpFly(c.xp); flown = true; }
+      renderNow({ cards: rest, stats: st }, true);
+    }, act === 'no' ? 450 : 220);
+    var flown = false;
+    call(fn, c.key).then(function (r) {
+      busy = false; remember('now', r);
+      if (flown) before = r.stats.xp;
+      if (act === 'done') { xpFly(r.stats.xp - before); if (c.type === 'reminder' || c.type === 'event') toast('Nice. A new leaf grew'); }
+      renderNow(r);
+    }).catch(function (e) { busy = false; fail(e); loaders.now(); });
+  }
+  /** The card crumbles into dust that drifts away, left to right. */
+  function dust(el) {
+    var r = el.getBoundingClientRect(), cols = 9, rows = 11, tw = r.width / cols, th = r.height / rows;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches || !el.animate) { el.style.opacity = '0'; return; }
+    var frag = document.createDocumentFragment(), bits = [];
+    for (var y = 0; y < rows; y++) for (var x = 0; x < cols; x++) {
+      var b = el.cloneNode(true); b.removeAttribute('id'); b.classList.add('dust');
+      b.style.cssText += ';inset:auto;left:' + r.left + 'px;top:' + r.top + 'px;width:' + r.width + 'px;height:' + r.height + 'px;transform:none;transition:none;' +
+        'clip-path:inset(' + (y * th) + 'px ' + (r.width - (x + 1) * tw - .5) + 'px ' + (r.height - (y + 1) * th - .5) + 'px ' + (x * tw) + 'px)';
+      frag.appendChild(b); bits.push([b, x, y]);
+    }
+    document.body.appendChild(frag);
+    el.style.transition = 'none'; el.style.opacity = '0';
+    bits.forEach(function (o) {
+      var dx = 30 + Math.random() * 90, dy = -(20 + Math.random() * 80), rot = (Math.random() - .5) * 60;
+      var delay = o[1] * 55 + Math.random() * 120 + (rows - o[2]) * 8;
+      o[0].animate([{ transform: 'translate(0,0) rotate(0)', opacity: 1 },
+                    { transform: 'translate(' + dx + 'px,' + dy + 'px) rotate(' + rot + 'deg) scale(.4)', opacity: 0 }],
+        { duration: 650 + Math.random() * 300, delay: delay, easing: 'cubic-bezier(.3,.1,.6,1)', fill: 'forwards' }).onfinish = function () { o[0].remove(); };
+    });
+  }
+  function swipe(el, cb) {
+    var x0 = null, dx = 0, id = null;
+    el.addEventListener('pointerdown', function (e) { if (e.target.closest('button,a')) return; x0 = e.clientX; dx = 0; id = e.pointerId; el.setPointerCapture(id); el.classList.add('drag'); });
+    el.addEventListener('pointermove', function (e) { if (x0 === null) return; dx = e.clientX - x0; el.style.transform = 'translateX(' + dx + 'px) rotate(' + dx / 25 + 'deg)'; });
+    function end() { if (x0 === null) return; el.classList.remove('drag'); x0 = null; if (Math.abs(dx) > 90) cb(dx); else el.style.transform = ''; }
+    el.addEventListener('pointerup', end); el.addEventListener('pointercancel', end);
+  }
+
+  // ================= INBOX =================
+  var inboxShowAll = false;
+  function loadInbox(force) {
+    if (force) { $('i-sub').textContent = 'Checking your mail…'; $('i-refresh').disabled = true; }
+    return call('apiInbox', !!force).then(function (r) { $('i-refresh').disabled = false; remember('inbox', r); renderInbox(r); }).catch(function (e) { $('i-refresh').disabled = false; fail(e); });
+  }
+  loaders.inbox = function () { if (cache.inbox) renderInbox(cache.inbox); loadInbox(false); };
+  $('i-refresh').onclick = function () { loadInbox(true); };
+  function cut(t, n) { t = String(t || ''); return t.length > n ? t.slice(0, n - 1).trim() + '…' : t; }
+  function emItem(m, needs) {
+    var sug = (m.suggestions || [])[0];
+    return '<div class="em"><span class="av">' + esc(initials(m.name)) + '</span><div style="flex:1"><b>' + esc(m.name) + '</b><small>' + esc(m.subject) + '</small>' +
+      (needs && m.why ? '<span class="why">Why: ' + esc(m.why) + '</span>' : '') +
+      '<div class="q">' + (sug ? '<button class="btn a sm" data-sug="' + esc(sug.id) + '">Add to calendar</button>' : '') +
+      '<a class="btn o sm" href="' + esc(m.link) + '" target="_blank" rel="noopener">Open</a>' +
+      '<button class="btn g sm" data-done="' + esc(m.threadId) + '">Done</button></div></div></div>';
+  }
+  function renderInbox(r) {
+    var n = r.needs.length + r.later.length + r.skip.length;
+    $('i-new').textContent = n + ' new';
+    var ago = r.scannedAt ? ' · checked ' + hm(r.scannedAt) : '';
+    $('i-sub').textContent = (r.needs.length ? (r.needs.length === 1 ? 'Only 1 needs you' : r.needs.length + ' need you') : 'Nothing needs you right now') + ago;
+    var sugs = {};
+    r.needs.concat(r.later).forEach(function (m) { (m.suggestions || []).forEach(function (s) { sugs[s.id] = s; }); });
+    var later = inboxShowAll ? r.later : r.later.slice(0, 4);
+    $('i-body').innerHTML =
+      '<div class="lane" style="--c:var(--c1);--k:var(--a)"><h3><span><i></i>Needs you</span><span class="n">' + r.needs.length + '</span></h3>' +
+        (r.needs.map(function (m) { return emItem(m, true); }).join('') || '<div class="more">Nothing urgent. Nice.</div>') + '</div>' +
+      '<div class="lane" style="--c:var(--c2);--k:var(--k2)"><h3><span><i></i>Read later</span><span class="n">' + r.later.length + '</span></h3>' +
+        (later.map(function (m) { return emItem(m, false); }).join('') || '<div class="more">Nothing here.</div>') +
+        (r.later.length > later.length ? '<button class="more" id="i-all">Show ' + (r.later.length - later.length) + ' more</button>' : '') + '</div>' +
+      '<div class="lane" style="--c:var(--c4);--k:var(--v)"><h3><span><i></i>Can skip</span><span class="n">' + r.skip.length + '</span></h3>' +
+        (r.skipGroups.length ? '<div class="chips">' + r.skipGroups.map(function (g) { return '<span>' + esc(g.name) + ' ' + g.count + '</span>'; }).join('') + '</div>' : '<div class="more">Nothing here.</div>') +
+        (r.skip.length ? '<button class="more" id="i-skipall">Mark all ' + r.skip.length + ' as done</button>' : '') + '</div>';
+    if ($('i-all')) $('i-all').onclick = function () { inboxShowAll = true; renderInbox(r); };
+    if ($('i-skipall')) $('i-skipall').onclick = function () {
+      this.disabled = true; this.textContent = 'Marking…';
+      r.skip.reduce(function (p, m) { return p.then(function () { return call('apiEmailDone', m.threadId); }); }, Promise.resolve())
+        .then(function () { toast('Skipped emails marked as read'); loadInbox(false); }).catch(fail);
+    };
+    [].forEach.call($('i-body').querySelectorAll('[data-done]'), function (b) { b.onclick = function () {
+      var item = b.closest('.em'); item.style.transition = 'opacity .25s'; item.style.opacity = '0';
+      setTimeout(function () { item.remove(); }, 260); xpFly(5);
+      call('apiEmailDone', b.dataset.done).then(function () { loadInbox(false); }).catch(fail); }; });
+    [].forEach.call($('i-body').querySelectorAll('[data-sug]'), function (b) { b.onclick = function () { addSuggestion(sugs[b.dataset.sug], b); }; });
+  }
+
+  // ================= NOTES + PLANT =================
+  var notes = [];
+  loaders.notes = function () {
+    if (cache.notes) { notes = cache.notes; renderNotes(); }
+    if (cache.now) renderPlant(cache.now.stats.plant);
+    call('apiListNotes').then(function (l) { notes = l; remember('notes', l); renderNotes(); }).catch(fail);
+    call('apiStats').then(function (st) { renderPlant(st.plant); if (cache.now) { cache.now.stats = st; remember('now', cache.now); } }).catch(fail);
+  };
+  function renderNotes() {
+    var q = $('nt-q').value.trim().toLowerCase();
+    var list = notes.filter(function (n) { return !q || n.text.toLowerCase().indexOf(q) >= 0; });
+    var tints = ['var(--c3)', 'var(--c2)', 'var(--c1)'];
+    $('nt-list').innerHTML = list.map(function (n, i) {
+      return '<div class="nt" style="--c:' + tints[i % 3] + '"><div><p>' + esc(n.text) + '</p><small>' + esc(whenLabel(n.created)) + '</small></div>' +
+        '<button class="x" data-del="' + esc(n.id) + '" aria-label="Delete note"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>';
+    }).join('') || '<div class="empty">' + (q ? 'No notes match "' + esc(q) + '".' : 'No notes yet. Tap + New, or say "note:" into the orange button.') + '</div>';
+    [].forEach.call($('nt-list').querySelectorAll('[data-del]'), function (b) { b.onclick = function () {
+      var id = b.dataset.del, note = notes.filter(function (n) { return n.id === id; })[0];
+      notes = notes.filter(function (n) { return n.id !== id; }); renderNotes();
+      var undone = false;
+      toast('Note deleted', { action: 'Undo', ms: 5000, onAction: function () { undone = true; notes.unshift(note); renderNotes(); } });
+      setTimeout(function () { if (!undone) call('apiDeleteNote', id).catch(fail); }, 5200);
+    }; });
+  }
+  $('nt-q').oninput = renderNotes;
+  $('nt-new').onclick = function () { $('nt-form').classList.add('on'); $('nt-text').focus(); };
+  $('nt-cancel').onclick = function () { $('nt-form').classList.remove('on'); $('nt-text').value = ''; };
+  $('nt-save').onclick = function () {
+    var t = $('nt-text').value.trim(); if (!t) return;
+    $('nt-save').disabled = true;
+    notes.unshift({ id: 'new', text: t, created: new Date().toISOString() }); renderNotes();
+    $('nt-text').value = ''; $('nt-form').classList.remove('on'); toast('Note saved');
+    call('apiAddNote', t).then(function (l) { $('nt-save').disabled = false; notes = l; remember('notes', l); renderNotes(); })
+      .catch(function (e) { $('nt-save').disabled = false; fail(e); loaders.notes(); });
+  };
+
+  /** Plant drawing: green leaves = done, brown drooping = missed, dashed = still to grow. */
+  function renderPlant(p) {
+    var leaves = [];
+    for (var i = 0; i < p.done; i++) leaves.push('done');
+    for (i = 0; i < p.missed; i++) leaves.push('missed');
+    for (i = 0; i < p.toGrow; i++) leaves.push('grow');
+    var shown = leaves.slice(0, 10), n = Math.max(shown.length, 1);
+    var top = Math.max(18, 116 - n * 10 - 8), stem = 'M75 124 C73 ' + (124 - (124 - top) * .4) + ' 78 ' + (124 - (124 - top) * .7) + ' 75 ' + top;
+    var svg = '<svg viewBox="0 0 150 180" role="img" aria-label="Your plant: ' + p.done + ' leaves grown, ' + p.missed + ' wilting, ' + p.toGrow + ' still to grow">' +
+      '<ellipse cx="75" cy="170" rx="44" ry="6" fill="#0000001f"/>' +
+      '<path d="M48 132h54l-7 36H55z" fill="var(--pot)"/><rect x="43" y="124" width="64" height="11" rx="4" fill="var(--pot)"/><rect x="43" y="124" width="64" height="4" rx="2" fill="#ffffff40"/>' +
+      '<path d="' + stem + '" stroke="var(--leaf2)" stroke-width="5" fill="none" stroke-linecap="round"/>';
+    shown.forEach(function (kind, i) {
+      var y = 116 - i * ((116 - top - 4) / n), side = i % 2 ? 1 : -1;
+      var leaf = 'M0 0 C' + 12 * side + ' -14 ' + 34 * side + ' -16 ' + 38 * side + ' -8 C' + 30 * side + ' 2 ' + 12 * side + ' 6 0 0z';
+      if (kind === 'done') svg += '<path transform="translate(75 ' + y + ')" d="' + leaf + '" fill="' + (i % 2 ? 'var(--leaf2)' : 'var(--leaf)') + '"/>';
+      else if (kind === 'missed') svg += '<path transform="translate(75 ' + y + ') rotate(' + (side > 0 ? 55 : -55) + ')" d="' + leaf + '" fill="var(--wilt)"/>';
+      else svg += '<path transform="translate(75 ' + y + ')" d="' + leaf + '" fill="none" stroke="var(--m)" stroke-width="1.6" stroke-dasharray="4 4" opacity=".6"/>';
+    });
+    svg += '</svg>';
+    var total = p.done + p.missed + p.toGrow;
+    $('nt-plant').innerHTML = svg + '<div class="ct"><b>' + p.done + '/' + total + '</b><small>leaves today</small>' +
+      '<div class="lg"><span style="--lf:var(--leaf)"><i></i>done</span><span style="--lf:var(--wilt)"><i></i>missed</span><span style="--lf:transparent"><i style="border:1.5px dashed var(--m)"></i>to grow</span></div></div>';
+  }
+
+  // ================= SHEETS =================
+  var openId = null;
+  function openSheet(id) { closeSheet(); openId = id; $(id).classList.add('on'); $('dim').classList.add('on'); }
+  function closeSheet() { if (!openId) return; $(openId).classList.remove('on'); $('dim').classList.remove('on'); if (openId === 's-mic') stopListening(); openId = null; }
+  $('dim').onclick = closeSheet;
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeSheet(); });
+
+  // ---------- Mic ----------
+  $('m-wave').innerHTML = [12, 26, 40, 22, 44, 30, 14, 36, 44, 28, 18, 40, 24, 10].map(function (h) { return '<i style="--h:' + h + 'px"></i>'; }).join('');
+  var SR = window.SpeechRecognition || window.webkitSpeechRecognition, rec = null;
+  $('fab').onclick = function () {
+    openSheet('s-mic'); $('m-result').innerHTML = ''; $('m-said').textContent = ''; $('m-text').value = '';
+    if (SR) startListening(); else { $('m-state').textContent = 'Type it, or tap the microphone on your keyboard'; $('m-text').focus(); }
+  };
+  $('m-btn').onclick = function () { if (rec) stopListening(); else if (SR) startListening(); else { $('m-state').textContent = 'Voice isn\'t available here. Type it, or use your keyboard\'s microphone.'; $('m-text').focus(); } };
+  function startListening() {
+    try {
+      rec = new SR(); rec.lang = store('lang') || (/^hu/i.test(LOC) ? 'hu-HU' : 'en-US'); rec.interimResults = true; rec.maxAlternatives = 1;
+      rec.onresult = function (e) {
+        var t = ''; for (var i = 0; i < e.results.length; i++) t += e.results[i][0].transcript;
+        $('m-said').textContent = '"' + t + '"'; $('m-text').value = t;
+        if (e.results[e.results.length - 1].isFinal) { stopListening(); check(t); }
+      };
+      rec.onerror = function (e) {
+        stopListening();
+        $('m-state').textContent = e.error === 'not-allowed' || e.error === 'service-not-allowed'
+          ? 'The microphone is blocked here. Type it, or tap the mic on your keyboard.' : e.error === 'no-speech' ? 'I didn\'t hear anything. Tap to try again.' : 'Voice stopped (' + e.error + '). Type it instead.';
+        $('m-text').focus();
+      };
+      rec.onend = function () { if (rec) stopListening(); };
+      rec.start();
+      $('m-state').textContent = 'Listening…'; $('m-wave').classList.add('on'); $('m-btn').classList.add('on');
+    } catch (err) { rec = null; $('m-state').textContent = 'Voice isn\'t available here. Type it instead.'; }
+  }
+  function stopListening() {
+    if (rec) { var r = rec; rec = null; try { r.stop(); } catch (e) {} }
+    $('m-wave').classList.remove('on'); $('m-btn').classList.remove('on');
+    if ($('m-state').textContent === 'Listening…') $('m-state').textContent = 'Tap the button to talk again';
+  }
+  $('m-check').onclick = function () { check($('m-text').value); };
+  $('m-text').onkeydown = function (e) { if (e.key === 'Enter') check($('m-text').value); };
+  function localInput(iso) { var d = iso ? new Date(iso) : new Date(Date.now() + 3600e3); d.setSeconds(0, 0); return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16); }
+  function check(text) {
+    text = String(text || '').trim(); if (!text) return;
+    $('m-said').textContent = '"' + text + '"';
+    $('m-result').innerHTML = '<div class="skel" style="margin-top:12px"></div>';
+    call('apiParseSpoken', text).then(function (p) {
+      if (p.type === 'reminder') {
+        $('m-result').innerHTML = '<div class="got"><small>' + (p.needsTime ? 'When should I remind you?' : 'I\'ll set this reminder:') + '</small>' +
+          '<input type="text" id="m-title" value="' + esc(p.title) + '" aria-label="Reminder" style="margin-top:6px">' +
+          '<input type="datetime-local" id="m-due" value="' + localInput(p.due) + '" aria-label="When" style="margin-top:6px">' +
+          (p.past ? '<small style="color:var(--wilt)">That time has already passed. Pick a new one.</small>' : '') +
+          '<div class="r"><button class="btn g" id="m-note">Save as note</button><button class="btn a" id="m-save">Save reminder</button></div></div>';
+        $('m-save').onclick = function () {
+          var due = new Date($('m-due').value);
+          if (isNaN(due)) { toast('Pick a time first', { err: true }); return; }
+          this.disabled = true;
+          call('apiAddReminder', $('m-title').value, due.toISOString()).then(function () { closeSheet(); toast('Reminder set for ' + whenLabel(due.toISOString())); if (loaders[current]) loaders[current](); })
+            .catch(function (e) { $('m-save').disabled = false; fail(e); });
+        };
+        $('m-note').onclick = function () { saveNote($('m-title').value); };
+      } else {
+        $('m-result').innerHTML = '<div class="got"><small>I\'ll save this note:</small><textarea id="m-ntext" style="margin-top:6px;min-height:70px">' + esc(p.text) + '</textarea>' +
+          '<div class="r"><button class="btn g" id="m-cancel">Cancel</button><button class="btn a" id="m-snote">Save note</button></div></div>';
+        $('m-snote').onclick = function () { saveNote($('m-ntext').value); };
+        $('m-cancel').onclick = closeSheet;
+      }
+    }).catch(function (e) { $('m-result').innerHTML = ''; fail(e); });
+  }
+  function saveNote(t) {
+    call('apiAddNote', t).then(function (l) { notes = l; closeSheet(); toast('Note saved'); if (current === 'notes') renderNotes(); }).catch(fail);
+  }
+
+  // ---------- Settings ----------
+  [].forEach.call(document.querySelectorAll('#st-theme button'), function (b) { b.onclick = function () { theme = b.dataset.t; store('theme', theme); applyTheme(theme); }; });
+  $('st-name').value = store('name') || '';
+  $('st-name').onchange = function () { store('name', $('st-name').value.trim()); hello(); };
+  $('st-lang').value = store('lang') || (/^hu/i.test(LOC) ? 'hu-HU' : 'en-US');
+  $('st-lang').onchange = function () { store('lang', $('st-lang').value); };
+  $('st-close').onclick = closeSheet;
+  $('st-mail').onclick = function () {
+    var on = $('st-mail').getAttribute('aria-checked') !== 'true'; $('st-mail').setAttribute('aria-checked', on);
+    call('apiEmailAlerts', on).then(function () { toast(on ? 'Email alerts on' : 'Email alerts off'); }).catch(function (e) { $('st-mail').setAttribute('aria-checked', !on); fail(e); });
+  };
+  $('st-notif').hidden = !window.Notification || Notification.permission === 'granted';
+  $('st-notif').onclick = function () { try { Notification.requestPermission().then(function (p) { $('st-notif').hidden = p === 'granted'; toast(p === 'granted' ? 'Notifications on' : 'Notifications not allowed'); }); } catch (e) { toast('This browser can\'t show notifications'); } };
+  function loadSettings() {
+    call('apiEmailAlertsOn').then(function (on) { $('st-mail').setAttribute('aria-checked', !!on); }).catch(function () {});
+    call('apiStatus').then(function (s) {
+      $('st-engine').value = s.engine; $('st-model').value = s.model;
+      $('st-info').textContent = 'Gemini key saved: ' + (s.hasKey ? 'yes' : 'no');
+      $('st-status').innerHTML = 'Signed in as <b>' + esc(s.email) + '</b><br>Calendar: ' + esc(s.calendar) + ' · Time zone: ' + esc(s.timeZone) +
+        '<br>Unread in inbox: ' + s.inboxUnread + '<br><a href="' + esc(s.sheetUrl) + '" target="_blank" rel="noopener">Open your data sheet</a>';
+    }).catch(function (e) { $('st-status').textContent = 'Could not connect: ' + (e.message || e); });
+  }
+  $('st-save').onclick = function () {
+    call('apiSaveSettings', $('st-engine').value, $('st-model').value, $('st-key').value).then(function (s) {
+      $('st-key').value = ''; $('st-info').textContent = 'Saved. Engine: ' + s.engine + ', key saved: ' + (s.hasKey ? 'yes' : 'no'); toast('AI settings saved');
+    }).catch(fail);
+  };
+  $('st-dfgo').onclick = function () {
+    call('apiTestDateFinder', $('st-df').value).then(function (l) {
+      $('st-dfres').innerHTML = l.map(function (c) { return '<div>• ' + esc(whenLabel(c.start, c.allDay)) + ' <span class="small">(' + esc(c.kind) + ', "' + esc(c.matchedText) + '", title: ' + esc(c.titleGuess) + ')</span></div>'; }).join('') || 'No dates found.';
+    }).catch(fail);
+  };
+
+  // ================= FULL CALENDAR =================
+  var CAL = { mode: store('calmode') || 'day', date: new Date(), data: {}, open: false };
+  var HOUR = 56; // pixels per hour in the day view
+  var ICON_REPEAT = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M17 2l4 4-4 4"/><path d="M3 11V9a3 3 0 0 1 3-3h15M7 22l-4-4 4-4"/><path d="M21 13v2a3 3 0 0 1-3 3H3"/></svg>';
+  function d0(d) { return new Date(d.getFullYear(), d.getMonth(), d.getDate()); }
+  function addD(d, n) { return new Date(d.getFullYear(), d.getMonth(), d.getDate() + n); }
+  function monday(d) { d = d0(d); return addD(d, -((d.getDay() + 6) % 7)); }
+  function pad(n) { return (n < 10 ? '0' : '') + n; }
+  function dateVal(d) { return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()); }
+  function timeVal(d) { return pad(d.getHours()) + ':' + pad(d.getMinutes()); }
+  function fromInputs(dv, tv) { var a = dv.split('-'), t = (tv || '00:00').split(':'); return new Date(+a[0], +a[1] - 1, +a[2], +t[0], +t[1]); }
+  function evColor(e) { return 'evc ' + (e.color || 'blue'); }
+
+  function openCalendar(mode, date) {
+    if (mode) CAL.mode = mode;
+    CAL.date = date ? new Date(date) : new Date();
+    $('cal').hidden = false; CAL.open = true;
+    document.body.style.overflow = 'hidden';
+    calRender();
+  }
+  function closeCalendar() { $('cal').hidden = true; CAL.open = false; document.body.style.overflow = ''; if (loaders[current]) loaders[current](); }
+  $('cal-close').onclick = closeCalendar;
+  $('cal-today').onclick = function () { CAL.date = new Date(); calRender(); };
+  $('cal-add').onclick = function () {
+    var s = d0(CAL.date), now = new Date();
+    s.setHours(sameDay(s, now) ? Math.min(23, now.getHours() + 1) : 9);
+    openEditor(null, s);
+  };
+  [].forEach.call(document.querySelectorAll('#cal-mode button'), function (b) { b.onclick = function () { CAL.mode = b.dataset.m; store('calmode', CAL.mode); calRender(); }; });
+  $('cal-prev').onclick = function () { step(-1); };
+  $('cal-next').onclick = function () { step(1); };
+  function step(n) {
+    var d = CAL.date;
+    CAL.date = CAL.mode === 'month' ? new Date(d.getFullYear(), d.getMonth() + n, 1) : CAL.mode === 'list' ? addD(d, 14 * n) : addD(d, n);
+    calRender();
+  }
+
+  /** Range the current view needs. */
+  function calRange() {
+    var d = CAL.date;
+    if (CAL.mode === 'month') { var f = monday(new Date(d.getFullYear(), d.getMonth(), 1)); return [f, addD(f, 42)]; }
+    if (CAL.mode === 'list') return [d0(d), addD(d0(d), 30)];
+    var m = monday(d); return [m, addD(m, 7)];
+  }
+  // The calendar keeps whole months on the phone (saved between visits), so views and days switch
+  // instantly. Each month is refreshed in the background at most once a minute, or after a change.
+  var CHUNKS = (function () { try { return JSON.parse(store('calchunks') || '{}'); } catch (e) { return {}; } })();
+  var chunkLoading = {};
+  function mKey(d) { return d.getFullYear() + '-' + d.getMonth(); }
+  function chunkRange(k) { var a = k.split('-'), f = monday(new Date(+a[0], +a[1], 1)); return [f, addD(f, 49)]; }
+  /** The fewest saved months that together cover a range. */
+  function monthsIn(r) { var ks = [], cur = r[0]; while (cur < r[1]) { var k = mKey(cur); ks.push(k); cur = chunkRange(k)[1]; } return ks; }
+  function saveChunks() {
+    var keep = {}, now = new Date(), lo = mKey(new Date(now.getFullYear(), now.getMonth() - 1, 1)), hi = mKey(new Date(now.getFullYear(), now.getMonth() + 2, 1));
+    Object.keys(CHUNKS).forEach(function (k) { var a = k.split('-'), n = +a[0] * 12 + +a[1]; var l = lo.split('-'), h = hi.split('-');
+      if (n >= +l[0] * 12 + +l[1] && n <= +h[0] * 12 + +h[1]) keep[k] = CHUNKS[k]; });
+    try { store('calchunks', JSON.stringify(keep)); } catch (e) {}
+  }
+  /** Merged data for a range, or null when a month is missing. */
+  function calData(r) {
+    var ks = monthsIn(r), ev = {}, rem = {}, out = { events: [], reminders: [] };
+    for (var i = 0; i < ks.length; i++) if (!CHUNKS[ks[i]]) return null;
+    ks.forEach(function (k) {
+      CHUNKS[k].events.forEach(function (e) { if (!ev[e.key] && new Date(e.start) < r[1] && new Date(e.end) > r[0]) { ev[e.key] = 1; out.events.push(e); } });
+      CHUNKS[k].reminders.forEach(function (x) { var d = new Date(x.due); if (!rem[x.id] && d >= r[0] && d < r[1]) { rem[x.id] = 1; out.reminders.push(x); } });
+    });
+    out.events.sort(function (a, b) { return a.start < b.start ? -1 : a.start > b.start ? 1 : 0; });
+    return out;
+  }
+  /** Load the months a range needs (only stale or missing ones, all in one trip). */
+  function calEnsure(ks) {
+    var need = ks.filter(function (k) { return !chunkLoading[k] && (!CHUNKS[k] || Date.now() - CHUNKS[k].t > 60e3); });
+    if (!need.length) return Promise.all(ks.map(function (k) { return chunkLoading[k]; }));
+    var p = call('apiCalendarMany', need.map(function (k) { var r = chunkRange(k); return [r[0].toISOString(), r[1].toISOString()]; })).then(function (list) {
+      list.forEach(function (x, i) { CHUNKS[need[i]] = { t: Date.now(), events: x.events, reminders: x.reminders }; delete chunkLoading[need[i]]; });
+      saveChunks();
+    }, function (e) { need.forEach(function (k) { delete chunkLoading[k]; }); throw e; });
+    need.forEach(function (k) { chunkLoading[k] = p; });
+    return Promise.all(ks.map(function (k) { return chunkLoading[k] || p; }));
+  }
+  function calPrefetch(d) {
+    d = d || CAL.date;
+    calEnsure([mKey(d), mKey(new Date(d.getFullYear(), d.getMonth() + 1, 1)), mKey(new Date(d.getFullYear(), d.getMonth() - 1, 1))]).catch(function () {});
+  }
+  /** After a change: keep showing what we have, fetch fresh in the background. */
+  function calRefresh() { Object.keys(CHUNKS).forEach(function (k) { CHUNKS[k].t = 0; }); if (CAL.open) calRender(); else calPrefetch(new Date()); }
+  var lastDrawn = '';
+  function calRender() {
+    [].forEach.call(document.querySelectorAll('#cal-mode button'), function (b) { b.classList.toggle('on', b.dataset.m === CAL.mode); });
+    var d = CAL.date;
+    $('cal-title').textContent = d.toLocaleDateString(LOC, { month: window.innerWidth < 360 ? 'short' : 'long', year: 'numeric' });
+    var r = calRange(), ks = monthsIn(r), x = calData(r), sig = CAL.mode + d.toDateString();
+    if (x) { draw(x); lastDrawn = sig + JSON.stringify(x); } else { $('cal-body').innerHTML = '<div class="skel" style="height:300px"></div>'; lastDrawn = ''; }
+    calEnsure(ks).then(function () {
+      if (!CAL.open || CAL.mode + CAL.date.toDateString() !== sig) return;
+      var y = calData(r); if (!y) return;
+      var now = sig + JSON.stringify(y); if (now === lastDrawn) return; // nothing changed: don't redraw
+      if (CAL.mode === 'day' && $('dgrid')) CAL.keepScroll = $('dgrid').scrollTop;
+      lastDrawn = now; draw(y);
+    }).catch(fail);
+    calPrefetch(d);
+    function draw(x) { if (CAL.mode === 'month') drawMonth(x); else if (CAL.mode === 'list') drawList(x); else drawDay(x); }
+  }
+  /** Show a change right away (simple, non-repeating events); the server copy replaces it shortly. */
+  function calLocal(payload, delId) {
+    Object.keys(CHUNKS).forEach(function (k) {
+      var c = CHUNKS[k];
+      var gone = delId || (payload && payload.id); if (gone) c.events = c.events.filter(function (e) { return e.id !== gone; });
+      if (payload) { var r = chunkRange(k); if (new Date(payload.start) < r[1] && new Date(payload.end) > r[0])
+        c.events.push(Object.assign({}, payload, { id: payload.id || 'tmp', key: 'tmp:' + (payload.id || Date.now()) + ':' + payload.start, source: 'app' })); }
+    });
+    if (CAL.open) calRender();
+  }
+  function onDay(list, day) {
+    var a = d0(day), b = addD(a, 1);
+    return list.filter(function (e) { return new Date(e.start) < b && new Date(e.end) > a; });
+  }
+  function evLine(e, day) {
+    var tm = e.allDay ? 'all-day' : (sameDay(e.start, day) ? hm(e.start) : 'cont.') + '<br>' + (sameDay(e.end, day) || new Date(e.end).getTime() === addD(d0(day), 1).getTime() ? hm(e.end) : '…');
+    return '<button class="lev ' + evColor(e) + '" data-key="' + esc(e.key) + '"><span class="bar"></span><span class="tm">' + tm + '</span><span style="flex:1"><b>' + esc(e.title) +
+      (e.repeat && e.repeat !== 'none' ? '<span class="rp" title="Repeats">' + ICON_REPEAT + '</span>' : '') + '</b>' + (e.location ? '<small>' + esc(e.location) + '</small>' : '') + '</span></button>';
+  }
+  function remLine(r) {
+    return '<button class="lev" style="--col:var(--wilt)" data-rem="' + esc(r.id) + '"><span class="bar"></span><span class="tm">' + hm(r.due) + '</span><span style="flex:1"><b>' + esc(r.text) + '</b><small>Reminder · tap when done</small></span></button>';
+  }
+  function bindLines(root, x) {
+    var byKey = {}; x.events.forEach(function (e) { byKey[e.key] = e; });
+    [].forEach.call(root.querySelectorAll('[data-key]'), function (b) { b.onclick = function () { openEditor(byKey[b.dataset.key]); }; });
+    [].forEach.call(root.querySelectorAll('[data-rem]'), function (b) { b.onclick = function () {
+      b.style.opacity = '.4'; call('apiCompleteReminder', b.dataset.rem).then(function () { xpFly(10); toast('Reminder done'); calRefresh(); }).catch(fail); }; });
+  }
+
+  // ---- Month ----
+  function drawMonth(x) {
+    var d = CAL.date, first = new Date(d.getFullYear(), d.getMonth(), 1), start = monday(first), now = new Date();
+    var wds = []; for (var i = 0; i < 7; i++) wds.push('<div class="wd">' + esc(addD(start, i).toLocaleDateString(LOC, { weekday: 'narrow' })) + '</div>');
+    var cells = [];
+    for (i = 0; i < 42; i++) {
+      var day = addD(start, i), evs = onDay(x.events, day), rems = x.reminders.filter(function (r) { return sameDay(r.due, day); });
+      var dots = evs.slice(0, 3).map(function (e) { return '<i class="' + evColor(e) + '"></i>'; }).join('') + (rems.length && evs.length < 3 ? '<i style="--col:var(--wilt)"></i>' : '');
+      cells.push('<button data-d="' + dateVal(day) + '" class="' + (day.getMonth() !== d.getMonth() ? 'out ' : '') + (sameDay(day, now) ? 'td ' : '') + (sameDay(day, d) ? 'sel' : '') + '" aria-label="' +
+        esc(day.toLocaleDateString(LOC, { weekday: 'long', day: 'numeric', month: 'long' })) + ', ' + (evs.length + rems.length) + ' items"><span>' + day.getDate() + '</span><div class="dts">' + dots + '</div></button>');
+    }
+    var sel = onDay(x.events, d), selR = x.reminders.filter(function (r) { return sameDay(r.due, d); });
+    $('cal-body').innerHTML = '<div class="mgrid">' + wds.join('') + cells.join('') + '</div><div class="mlist"><h4>' + esc(d.toLocaleDateString(LOC, { weekday: 'long', day: 'numeric', month: 'long' })) + '</h4>' +
+      (sel.map(function (e) { return evLine(e, d); }).join('') + selR.map(remLine).join('') || '<div class="empty" style="padding:14px">No events. Tap + to add one.</div>') + '</div>';
+    [].forEach.call($('cal-body').querySelectorAll('.mgrid button'), function (b) { b.onclick = function () {
+      var a = b.dataset.d.split('-'), nd = new Date(+a[0], +a[1] - 1, +a[2]);
+      if (sameDay(nd, CAL.date)) { CAL.mode = 'day'; store('calmode', 'day'); }
+      CAL.date = nd; calRender(); }; b.ondblclick = function () { CAL.mode = 'day'; calRender(); }; });
+    bindLines($('cal-body'), x);
+  }
+
+  // ---- List ----
+  function drawList(x) {
+    var start = d0(CAL.date), h = '';
+    for (var i = 0; i < 30; i++) {
+      var day = addD(start, i), evs = onDay(x.events, day), rems = x.reminders.filter(function (r) { return sameDay(r.due, day); });
+      if (!evs.length && !rems.length) continue;
+      h += '<h4>' + esc(whenLabel(day.toISOString(), true)) + (i > 1 ? '' : ' · ' + esc(day.toLocaleDateString(LOC, { day: 'numeric', month: 'short' }))) + '</h4>' +
+        evs.map(function (e) { return evLine(e, day); }).join('') + rems.map(remLine).join('');
+    }
+    $('cal-body').innerHTML = '<div class="alist">' + (h || '<div class="empty">Nothing in the next 30 days. Tap + to add an event.</div>') + '</div>';
+    bindLines($('cal-body'), x);
+  }
+
+  // ---- Day (time grid with drag to move and drag-the-edge to resize) ----
+  function layout(evs) {
+    // Put overlapping events side by side, like a real calendar.
+    var cols = [], groups = [], g = null, gEnd = 0;
+    evs.forEach(function (e) {
+      var s = +new Date(e._s), en = +new Date(e._e);
+      if (!g || s >= gEnd) { g = []; groups.push(g); cols = []; gEnd = 0; }
+      var c = 0; while (cols[c] > s) c++;
+      cols[c] = en; e._col = c; g.push(e); gEnd = Math.max(gEnd, en);
+      g.forEach(function (x) { x._n = cols.length; });
+    });
+    groups.forEach(function (gr) { var n = Math.max.apply(null, gr.map(function (x) { return x._col + 1; })); gr.forEach(function (x) { x._n = n; }); });
+  }
+  function drawDay(x) {
+    var d = d0(CAL.date), now = new Date(), wk = monday(d);
+    var strip = []; for (var i = 0; i < 7; i++) { var day = addD(wk, i);
+      strip.push('<button data-d="' + dateVal(day) + '" class="' + (sameDay(day, d) ? 'sel ' : '') + (sameDay(day, now) ? 'td' : '') + '">' + esc(day.toLocaleDateString(LOC, { weekday: 'short' })) + '<b>' + day.getDate() + '</b></button>'); }
+    var all = onDay(x.events, d);
+    var allDay = all.filter(function (e) { return e.allDay; });
+    var timed = all.filter(function (e) { return !e.allDay; }).map(function (e) {
+      var o = Object.assign({}, e); var a = d, b = addD(d, 1);
+      o._s = new Date(Math.max(+new Date(e.start), +a)).toISOString(); o._e = new Date(Math.min(+new Date(e.end), +b)).toISOString(); return o; });
+    layout(timed);
+    var rems = x.reminders.filter(function (r) { return sameDay(r.due, d); });
+    var hours = ''; for (i = 0; i < 24; i++) hours += '<div class="hr" style="top:' + i * HOUR + 'px"><span>' + (i ? pad(i) + ':00' : '') + '</span></div>';
+    var evHtml = timed.map(function (e) {
+      var s = new Date(e._s), en = new Date(e._e), top = (s.getHours() * 60 + s.getMinutes()) / 60 * HOUR;
+      var hgt = Math.max(22, (en - s) / 36e5 * HOUR - 2), w = 100 / e._n;
+      return '<div class="gev ' + evColor(e) + (hgt < 40 ? ' short' : '') + '" data-key="' + esc(e.key) + '" style="top:' + top + 'px;height:' + hgt + 'px;left:calc(' + (w * e._col) + '% + 1px);width:calc(' + w + '% - 3px)">' +
+        '<b>' + esc(e.title) + '</b>' + (hgt >= 40 ? '<small>' + hm(e.start) + '–' + hm(e.end) + (e.location ? ' · ' + esc(e.location) : '') + '</small>' : '') + '<span class="rs" aria-hidden="true"></span></div>';
+    }).join('');
+    var nowLine = sameDay(d, now) ? '<div class="nowline" style="top:' + (now.getHours() * 60 + now.getMinutes()) / 60 * HOUR + 'px"></div>' : '';
+    $('cal-body').innerHTML = '<div class="dstrip">' + strip.join('') + '</div>' +
+      '<p class="dtitle">' + esc(d.toLocaleDateString(LOC, { weekday: 'long', day: 'numeric', month: 'long' })) + '</p>' +
+      (allDay.length ? '<div class="allday">' + allDay.map(function (e) { return '<button class="' + evColor(e) + '" data-key="' + esc(e.key) + '">' + esc(e.title) + '</button>'; }).join('') + '</div>' : '') +
+      (rems.length ? '<div class="remrow">' + rems.map(function (r) { return '<button data-rem="' + esc(r.id) + '">' + hm(r.due) + ' ' + esc(r.text) + '</button>'; }).join('') + '</div>' : '') +
+      '<div class="dgrid" id="dgrid"><div class="hours" id="hours">' + hours + nowLine + evHtml + '</div></div>';
+    [].forEach.call($('cal-body').querySelectorAll('.dstrip button'), function (b) { b.onclick = function () { var a = b.dataset.d.split('-'); CAL.date = new Date(+a[0], +a[1] - 1, +a[2]); calRender(); }; });
+    var byKey = {}; x.events.forEach(function (e) { byKey[e.key] = e; });
+    [].forEach.call($('cal-body').querySelectorAll('.allday [data-key]'), function (b) { b.onclick = function () { openEditor(byKey[b.dataset.key]); }; });
+    [].forEach.call($('cal-body').querySelectorAll('.remrow [data-rem]'), function (b) { b.onclick = function () {
+      b.style.opacity = '.4'; call('apiCompleteReminder', b.dataset.rem).then(function () { xpFly(10); toast('Reminder done'); calRefresh(); }).catch(fail); }; });
+    var grid = $('dgrid');
+    // scroll to now (today) or to 7:00
+    var focusH = sameDay(d, now) ? Math.max(0, now.getHours() - 1) : 7;
+    if (CAL.keepScroll != null) { grid.scrollTop = CAL.keepScroll; CAL.keepScroll = null; } else grid.scrollTop = focusH * HOUR;
+    // tap an empty spot: new event there (snapped to the half hour)
+    $('hours').addEventListener('click', function (e) {
+      if (e.target.closest('.gev')) return;
+      var y = e.clientY - $('hours').getBoundingClientRect().top, mins = Math.max(0, Math.min(23 * 60 + 30, Math.floor(y / HOUR * 2) * 30));
+      var s = new Date(d.getFullYear(), d.getMonth(), d.getDate(), Math.floor(mins / 60), mins % 60);
+      openEditor(null, s);
+    });
+    [].forEach.call($('hours').querySelectorAll('.gev'), function (el) { dragEvent(el, byKey[el.dataset.key], d, grid); });
+  }
+
+  /** Long-press (touch) or drag (mouse) moves an event; the bottom handle changes its length. 15-minute steps. */
+  function dragEvent(el, ev, day, grid) {
+    var mode = null, y0 = 0, top0 = 0, h0 = 0, timer = null, moved = false, startT = 0, tip = null, pid = null, scroll0 = 0;
+    function snap(px) { return Math.round(px / (HOUR / 4)) * (HOUR / 4); }
+    function minsOf(px) { return Math.round(px / HOUR * 60); }
+    function label() {
+      var t = parseFloat(el.style.top), hh = parseFloat(el.style.height);
+      var s = new Date(day.getFullYear(), day.getMonth(), day.getDate(), 0, minsOf(t)), e = new Date(s.getTime() + minsOf(hh + 2) * 60e3);
+      return { s: s, e: e, text: hm(s.toISOString()) + '–' + hm(e.toISOString()) };
+    }
+    function begin(m) {
+      mode = m; el.classList.add('drag');
+      if (navigator.vibrate) try { navigator.vibrate(12); } catch (x) {}
+      tip = document.createElement('div'); tip.className = 'dragtip'; document.body.appendChild(tip);
+    }
+    el.addEventListener('pointerdown', function (e) {
+      if (e.button) return;
+      pid = e.pointerId; y0 = e.clientY; top0 = parseFloat(el.style.top); h0 = parseFloat(el.style.height); moved = false; startT = Date.now(); scroll0 = grid.scrollTop;
+      var isHandle = e.target.classList.contains('rs');
+      if (isHandle) { e.preventDefault(); el.setPointerCapture(pid); begin('resize'); return; }
+      if (e.pointerType === 'mouse') return; // mouse: start moving once it moves a little
+      timer = setTimeout(function () { if (!moved) { el.setPointerCapture(pid); begin('move'); } }, 380);
+    });
+    el.addEventListener('pointermove', function (e) {
+      var dy = e.clientY - y0;
+      if (!mode) {
+        if (Math.abs(dy) > 6) { moved = true; clearTimeout(timer); if (e.pointerType === 'mouse' && e.buttons === 1) { el.setPointerCapture(pid); begin('move'); } }
+        if (!mode) return;
+      }
+      if (mode === 'move') el.style.top = Math.max(0, Math.min(24 * HOUR - parseFloat(el.style.height), snap(top0 + dy))) + 'px';
+      else el.style.height = Math.max(HOUR / 4 - 2, Math.min(24 * HOUR - top0, snap(h0 + 2 + dy)) - 2) + 'px';
+      var l = label(); tip.textContent = l.text; tip.style.left = (e.clientX + 14) + 'px'; tip.style.top = (e.clientY - 36) + 'px';
+      // auto-scroll near the edges
+      var r = grid.getBoundingClientRect();
+      if (e.clientY < r.top + 30) grid.scrollTop -= 8; else if (e.clientY > r.bottom - 30) grid.scrollTop += 8;
+    });
+    // Stop the page from scrolling while an event is being dragged (touch).
+    el.addEventListener('touchmove', function (e) { if (mode) e.preventDefault(); }, { passive: false });
+    function end(e) {
+      clearTimeout(timer);
+      if (!mode) {
+        if (e.type === 'pointerup' && !moved && Date.now() - startT < 600) openEditor(ev);
+        return;
+      }
+      var m = mode; mode = null; el.classList.remove('drag'); if (tip) { tip.remove(); tip = null; }
+      if (e.type === 'pointercancel') { calRender(); return; }
+      var l = label();
+      var origS = new Date(ev.start), origE = new Date(ev.end);
+      var ns = m === 'move' ? l.s : origS, ne = m === 'move' ? new Date(l.s.getTime() + (origE - origS)) : l.e;
+      if (ns.getTime() === origS.getTime() && ne.getTime() === origE.getTime()) return;
+      CAL.keepScroll = grid.scrollTop;
+      var payload = Object.assign({}, ev, { occurrence: ev.start, start: ns.toISOString(), end: ne.toISOString() });
+      askScope(ev, 'save', function (scope) {
+        if (!scope) { calRender(); return; }
+        call('apiSaveEvent', payload, scope).then(function () { toast((m === 'move' ? 'Moved to ' : 'Now ') + hm(ns.toISOString()) + '–' + hm(ne.toISOString())); calRefresh(); }).catch(function (x) { fail(x); calRefresh(); });
+      });
+    }
+    el.addEventListener('pointerup', end); el.addEventListener('pointercancel', end);
+    el.addEventListener('click', function (e) { e.stopPropagation(); });
+  }
+
+  // ---- "This event only / future events" for repeating events ----
+  var scopeCb = null, scopeBack = null;
+  function askScope(ev, kind, cb) {
+    if (!ev || !ev.repeat || ev.repeat === 'none') { cb('all'); return; }
+    scopeCb = cb; scopeBack = openId;
+    $('sc-q').textContent = kind === 'delete' ? 'This is a repeating event. Delete…' : 'This is a repeating event. Save the change for…';
+    $('sc-this').textContent = kind === 'delete' ? 'Delete This Event Only' : 'Save for this event only';
+    $('sc-future').textContent = kind === 'delete' ? 'Delete All Future Events' : 'Save for future events';
+    $('sc-this').style.color = $('sc-future').style.color = kind === 'delete' ? 'var(--red)' : '';
+    openSheet('s-scope');
+  }
+  function scopeDone(scope) { var cb = scopeCb, back = scopeBack; scopeCb = null; closeSheet(); if (!scope && back === 's-ev') { openSheet('s-ev'); return; } if (cb) cb(scope); }
+  $('sc-this').onclick = function () { scopeDone('this'); };
+  $('sc-future').onclick = function () { scopeDone('future'); };
+  $('sc-cancel').onclick = function () { scopeDone(null); };
+
+  // ---- Event editor (iPhone "New Event" sheet) ----
+  var ED = null; // {ev (existing occurrence) or null, duration}
+  var COLORS = ['blue', 'orange', 'pink', 'green', 'purple'];
+  $('ev-cols').innerHTML = COLORS.map(function (c) { return '<button class="evc ' + c + '" data-c="' + c + '" aria-label="' + c + '" aria-pressed="false"></button>'; }).join('');
+  [].forEach.call($('ev-cols').children, function (b) { b.onclick = function () { setColor(b.dataset.c); }; });
+  function setColor(c) { [].forEach.call($('ev-cols').children, function (b) { b.setAttribute('aria-pressed', b.dataset.c === c); }); ED.color = c; }
+  function setAllDay(on) {
+    $('ev-allday').setAttribute('aria-checked', on); $('ev-st').hidden = $('ev-et').hidden = on;
+    validate();
+  }
+  $('ev-allday').onclick = function () { setAllDay($('ev-allday').getAttribute('aria-checked') !== 'true'); };
+  function readEditor() {
+    var allDay = $('ev-allday').getAttribute('aria-checked') === 'true';
+    var s = fromInputs($('ev-sd').value, allDay ? '00:00' : $('ev-st').value), e = fromInputs($('ev-ed').value, allDay ? '00:00' : $('ev-et').value);
+    if (allDay) e = addD(e, 1); // the end date is the last day; stored as the next morning
+    return { allDay: allDay, s: s, e: e };
+  }
+  function validate() {
+    var r = readEditor(), bad = !(r.e > r.s) || isNaN(r.s) || isNaN(r.e);
+    $('ev-ed').classList.toggle('bad', bad); $('ev-et').classList.toggle('bad', bad);
+    $('ev-save').disabled = bad;
+    $('ev-endrep-row').hidden = $('ev-rep').value === 'none';
+    $('ev-until').hidden = $('ev-endrep').value !== 'on' || $('ev-rep').value === 'none';
+    return !bad;
+  }
+  // Changing the start keeps the length, like iPhone.
+  function startChanged() {
+    var allDay = $('ev-allday').getAttribute('aria-checked') === 'true';
+    var s = fromInputs($('ev-sd').value, allDay ? '00:00' : $('ev-st').value);
+    if (!isNaN(s)) { var e = new Date(s.getTime() + ED.duration); if (allDay) e = addD(d0(e), 0); $('ev-ed').value = dateVal(allDay ? addD(e, -1 + (ED.duration > 0 ? 0 : 1)) : e); $('ev-et').value = timeVal(e); }
+    validate();
+  }
+  function endChanged() { var r = readEditor(); if (r.e > r.s) ED.duration = r.e - r.s; validate(); }
+  $('ev-sd').onchange = $('ev-st').onchange = startChanged;
+  $('ev-ed').onchange = $('ev-et').onchange = endChanged;
+  $('ev-rep').onchange = $('ev-endrep').onchange = validate;
+
+  function openEditor(ev, start) {
+    ED = { ev: ev || null, color: (ev && ev.color) || 'blue' };
+    var s = ev ? new Date(ev.start) : new Date(start || Date.now()), e = ev ? new Date(ev.end) : new Date(s.getTime() + 3600e3);
+    var allDay = !!(ev && ev.allDay);
+    ED.duration = e - s;
+    $('ev-h').textContent = ev ? 'Edit Event' : 'New Event';
+    $('ev-save').textContent = ev ? 'Done' : 'Add';
+    $('ev-title').value = ev ? ev.title : ''; $('ev-loc').value = ev ? ev.location || '' : '';
+    $('ev-sd').value = dateVal(s); $('ev-st').value = timeVal(s);
+    $('ev-ed').value = dateVal(allDay ? addD(e, -1) : e); $('ev-et').value = timeVal(e);
+    $('ev-rep').value = ev ? ev.repeat || 'none' : 'none';
+    $('ev-endrep').value = ev && ev.repeatUntil ? 'on' : 'never';
+    $('ev-until').value = ev && ev.repeatUntil ? dateVal(new Date(ev.repeatUntil)) : dateVal(addD(s, 28));
+    $('ev-alert').value = ev ? (ev.alert === '' ? '' : String(ev.alert)) : '';
+    $('ev-notes').value = ev ? ev.notes || '' : '';
+    $('ev-del').hidden = !ev;
+    setColor(ED.color); setAllDay(allDay);
+    openSheet('s-ev');
+    if (!ev) setTimeout(function () { $('ev-title').focus(); }, 260);
+  }
+  $('ev-cancel').onclick = closeSheet;
+  $('ev-save').onclick = function () {
+    if (!validate()) return;
+    var r = readEditor(), ev = ED.ev;
+    var payload = { id: ev ? ev.id : '', occurrence: ev ? ev.start : '', title: $('ev-title').value.trim() || 'New event', location: $('ev-loc').value.trim(),
+      allDay: r.allDay, start: r.s.toISOString(), end: r.e.toISOString(), repeat: $('ev-rep').value,
+      repeatUntil: $('ev-rep').value !== 'none' && $('ev-endrep').value === 'on' && $('ev-until').value ? fromInputs($('ev-until').value).toISOString() : '',
+      alert: $('ev-alert').value, color: ED.color, notes: $('ev-notes').value };
+    var go = function (scope) {
+      if (!scope) return;
+      closeSheet();
+      if (scope === 'all' && payload.repeat === 'none' && !(ev && ev.repeat && ev.repeat !== 'none')) calLocal(payload);
+      call('apiSaveEvent', payload, scope).then(function () { toast(ev ? 'Event updated' : 'Event added'); calRefresh(); scheduleAlerts(); if (!CAL.open && loaders[current]) loaders[current](); })
+        .catch(function (x) { fail(x); });
+    };
+    if (ev) askScope(ev, 'save', go); else go('all');
+  };
+  $('ev-del').onclick = function () {
+    var ev = ED.ev; if (!ev) return;
+    askScope(ev, 'delete', function (scope) {
+      if (!scope) return;
+      closeSheet();
+      if (scope === 'all' || !ev.repeat || ev.repeat === 'none') calLocal(null, ev.id);
+      call('apiDeleteEvent', ev.id, ev.start, scope).then(function () {
+        toast('Event deleted'); calRefresh(); if (!CAL.open && loaders[current]) loaders[current]();
+      }).catch(fail);
+    });
+  };
+
+  // ---- Alerts: pop up inside the app while it's open ----
+  var alertTimers = [], shownAlerts = {};
+  function scheduleAlerts() {
+    call('apiAlerts', 24).then(function (list) {
+      alertTimers.forEach(clearTimeout); alertTimers = [];
+      list.forEach(function (a) {
+        var ms = new Date(a.at) - Date.now();
+        if (ms < -60e3 || shownAlerts[a.key]) return;
+        alertTimers.push(setTimeout(function () { showAlert(a); }, Math.max(0, ms)));
+      });
+    }).catch(function () {});
+  }
+  var alertNow = null;
+  function showAlert(a) {
+    if (shownAlerts[a.key]) return; shownAlerts[a.key] = true; alertNow = a;
+    $('al-t').textContent = a.title;
+    $('al-s').textContent = a.kind === 'reminder' ? 'Reminder · now' : (a.allDay ? 'Today' : (new Date(a.start) <= new Date() ? 'Now' : 'At ' + hm(a.start))) + (a.location ? ' · ' + a.location : '');
+    $('alertb').classList.add('on');
+    if (navigator.vibrate) try { navigator.vibrate([200, 100, 200]); } catch (e) {}
+    try { if (window.Notification && Notification.permission === 'granted') new Notification(a.title, { body: $('al-s').textContent }); } catch (e) {}
+  }
+  $('al-ok').onclick = function () { $('alertb').classList.remove('on'); };
+  $('al-open').onclick = function () {
+    $('alertb').classList.remove('on');
+    if (alertNow && alertNow.kind === 'event') openCalendar('day', alertNow.start); else show('now');
+  };
+  setInterval(scheduleAlerts, 10 * 60e3);
+  document.addEventListener('visibilitychange', function () { if (!document.hidden) scheduleAlerts(); });
+
+  // Home: calendar button, month name, and tapping an event open the calendar
+  $('b-cal').onclick = function () { openCalendar(null, homeDay || new Date()); };
+  $('h-month').onclick = function () { openCalendar('month', homeDay || new Date()); };
+
+  // ---------- start ----------
+  scheduleAlerts();
+  homeDays = cache.days || {};
+  if (cache.home) showHome(cache.home);
+  call('apiBoot').then(function (b) {
+    remember('home', b.home); if (b.week) keepWeek(b.week); remember('now', b.now); remember('notes', b.notes); if (b.inbox) remember('inbox', b.inbox);
+    if (current === 'home' && !homeDay) showHome(b.home);
+    setTimeout(function () { calPrefetch(new Date()); }, 300);
+    if (!b.inbox) {
+      // First open today: read the mailbox once in the background, then refresh what it changes.
+      call('apiInbox', false).then(function (r) {
+        remember('inbox', r); if (current === 'inbox') renderInbox(r);
+        if (current === 'home' && !homeDay) loadHome();
+        call('apiNow').then(function (n) { remember('now', n); if (current === 'now' && !busy) renderNow(n); });
+      }).catch(function () {});
+    }
+  }).catch(fail);
+})();
+</script>
+</body>
+</html>
