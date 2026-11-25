@@ -637,6 +637,19 @@ html.lk-cl.t-light .glow{background:#eef0f7!important}
 html.lk-cl.t-light{--gl:rgba(255,255,255,.9);--gl2:rgba(255,255,255,.95);--glb:rgba(60,60,90,.1);--glt:rgba(255,255,255,.85)}
 html.lk-cl.t-light .blk,html.lk-cl.t-light .card,html.lk-cl.t-light .nt,html.lk-cl.t-light .bub p,html.lk-cl.t-light .nextbar,html.lk-cl.t-light .cd.front,html.lk-cl.t-light .wk button:not(.sel){box-shadow:inset 0 0 0 .5px var(--glb),0 6px 20px -10px rgba(40,40,90,.28)!important}
  html.lk-cl.t-light .blk.now{box-shadow:inset 0 0 0 2px var(--p),0 8px 24px -12px var(--p)!important}html.lk-cl.t-light .blk.missed{box-shadow:inset 0 0 0 2px var(--a),0 6px 20px -10px rgba(40,40,90,.28)!important}
+.bub{align-items:flex-end!important;gap:6px!important}
+.bub>i.panda{width:74px!important;height:74px!important;background:none!important;border-radius:0!important;flex:none;animation:pbob 3.2s ease-in-out infinite;transform-origin:50% 90%}
+.bub>i.panda svg{width:100%;height:100%;display:block;filter:drop-shadow(0 4px 8px rgba(0,0,0,.25))}
+.bub p{position:relative;border-radius:22px 22px 22px 22px!important;margin-bottom:20px!important}
+.bub p::before{content:"";position:absolute;left:-9px;bottom:12px;width:18px;height:18px;background:inherit;-webkit-backdrop-filter:inherit;backdrop-filter:inherit;clip-path:polygon(0 100%,100% 0,100% 100%);}
+@keyframes pbob{0%,100%{transform:translateY(0) rotate(0)}50%{transform:translateY(-2px) rotate(-2deg)}}
+
+.bub>i.panda.pop{animation:ppop .45s ease-out,pbob 3.2s ease-in-out .45s infinite}
+@keyframes ppop{0%{transform:scale(.7)}60%{transform:scale(1.08)}100%{transform:scale(1)}}
+@media(prefers-reduced-motion:reduce){.bub>i.panda{animation:none!important}}
+html.lk-cl .bub>i.panda{background:none!important}
+/* sheets follow the finger when pulled down */
+.sheet.drag{transition:none!important}
 </style>
 </head>
 <body>
@@ -649,7 +662,7 @@ html.lk-cl.t-light .blk,html.lk-cl.t-light .card,html.lk-cl.t-light .nt,html.lk-
       <button class="ib" id="b-cal" aria-label="Open calendar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4.5" width="18" height="16.5" rx="3"/><path d="M3 9.5h18M8 2.5v4M16 2.5v4"/><path d="M7.5 13.5h2M11 13.5h2M14.5 13.5h2M7.5 17h2M11 17h2"/></svg></button><button class="ib" id="b-settings" aria-label="Settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3h0a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8v0a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button></div></div>
     <div class="wkh"><span id="h-month"></span><div class="nav"><button id="wk-prev" aria-label="Previous week"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="m15 6-6 6 6 6"/></svg></button><button id="wk-next" aria-label="Next week"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="m9 6 6 6-6 6"/></svg></button></div></div>
     <div class="wk" id="h-week"></div>
-    <div class="bub" id="h-bub" hidden><i></i><p id="h-buddy"></p></div>
+    <div class="bub" id="h-bub" hidden><i class="panda" id="h-panda"></i><p id="h-buddy"></p></div>
     <div id="h-blocks"><div class="skel"></div><div class="skel"></div><div class="skel"></div></div>
   </section>
 
@@ -1087,6 +1100,7 @@ html.lk-cl.t-light .blk,html.lk-cl.t-light .card,html.lk-cl.t-light .nt,html.lk-
     $('wk-prev').onclick = function () { var d = new Date(h.day); d.setDate(d.getDate() - 7); loadHome(d.toISOString()); };
     $('wk-next').onclick = function () { var d = new Date(h.day); d.setDate(d.getDate() + 7); loadHome(d.toISOString()); };
     $('h-bub').hidden = !h.buddy; $('h-buddy').textContent = h.buddy;
+    if (h.buddy) { var mood = pandaMood(h); if ($('h-panda').dataset.m !== mood) { $('h-panda').dataset.m = mood; $('h-panda').innerHTML = panda(mood); $('h-panda').classList.remove('pop'); void $('h-panda').offsetWidth; $('h-panda').classList.add('pop'); } }
     if (!h.blocks.length) {
       $('h-blocks').innerHTML = '<div class="empty">' + (h.isToday ? 'Nothing planned today. Tap the orange button to add something.' : 'Nothing planned on ' + esc(dayName(h.day, { weekday: 'long' })) + '.') + '</div>';
       return;
@@ -1328,6 +1342,73 @@ html.lk-cl.t-light .blk,html.lk-cl.t-light .card,html.lk-cl.t-light .nt,html.lk-
     [].forEach.call($('i-body').querySelectorAll('[data-sugno]'), function (b) { b.onclick = function () { sugAnswer(b, b.dataset.sugno, false); }; });
   }
 
+  // ---------- Panda buddy: its face follows the day ----------
+  function panda(expr) {
+    var K = '#2b2830', W = '#ffffff', P = '#ff9cb5';
+    // big glossy eye (no white ring, so it never stares)
+    var eye = function (x, y) {
+      return '<ellipse cx="' + x + '" cy="' + y + '" rx="5.6" ry="6.4" fill="#0b0b0f"/>' +
+        '<circle cx="' + (x + 1.9) + '" cy="' + (y - 2.4) + '" r="2.3" fill="' + W + '"/>' +
+        '<circle cx="' + (x - 2) + '" cy="' + (y + 2.4) + '" r="1.05" fill="' + W + '" opacity=".85"/>';
+    };
+    var smileEye = function (x, y) { return '<path d="M' + (x - 5) + ' ' + (y + 1.5) + ' q5 -6.5 10 0" stroke="' + W + '" stroke-width="2.6" fill="none" stroke-linecap="round"/>'; };
+    var shutEye = function (x, y) { return '<path d="M' + (x - 5) + ' ' + (y - 0.5) + ' q5 5 10 0" stroke="' + W + '" stroke-width="2.4" fill="none" stroke-linecap="round"/>'; };
+    var L = 36, R = 64, EY = 60; // eye centres
+    var eyes, mouth, extra = '', cheeks = 0.7, brow = '';
+    switch (expr) {
+      case 'excited':
+        eyes = smileEye(L, EY) + smileEye(R, EY);
+        mouth = '<path d="M44.5 73 q5.5 8 11 0 z" fill="' + K + '"/><path d="M47 75.6 q3 2.6 6 0 q-3 2.4 -6 0z" fill="' + P + '"/>';
+        extra = '<path d="M88 16 l1.8 4.4 4.4 1.8 -4.4 1.8 -1.8 4.4 -1.8 -4.4 -4.4 -1.8 4.4 -1.8z" fill="#ffd60a"/><path d="M10 34 l1.3 3.2 3.2 1.3 -3.2 1.3 -1.3 3.2 -1.3 -3.2 -3.2 -1.3 3.2 -1.3z" fill="#ffd60a"/>';
+        cheeks = 0.95; break;
+      case 'sleepy':
+        eyes = shutEye(L, EY + 1) + shutEye(R, EY + 1);
+        mouth = '<ellipse cx="50" cy="74.5" rx="2.2" ry="1.8" fill="' + K + '"/>';
+        extra = '<text x="78" y="26" font-family="-apple-system,system-ui,sans-serif" font-weight="800" font-size="12" fill="#9d9df5">z</text><text x="87" y="16" font-family="-apple-system,system-ui,sans-serif" font-weight="800" font-size="8.5" fill="#9d9df5">z</text>';
+        cheeks = 0.5; break;
+      case 'worried':
+        eyes = eye(L, EY + 1) + eye(R, EY + 1);
+        brow = '<path d="M30 46.5 q5 -3.2 9.5 -0.6" stroke="' + K + '" stroke-width="2.2" fill="none" stroke-linecap="round"/><path d="M60.5 45.9 q4.5 -2.6 9.5 0.6" stroke="' + K + '" stroke-width="2.2" fill="none" stroke-linecap="round"/>';
+        mouth = '<path d="M46.5 75 q3.5 -2.6 7 0" stroke="' + K + '" stroke-width="2.1" fill="none" stroke-linecap="round"/>';
+        extra = '<path d="M83 50 q3.6 5.4 0 8 q-3.6 -2.6 0 -8z" fill="#7fd8ff"/>';
+        cheeks = 0.55; break;
+      case 'proud':
+        eyes = eye(L, EY) + smileEye(R, EY);
+        mouth = '<path d="M44 71.5 q6 7 12 0" stroke="' + K + '" stroke-width="2.4" fill="none" stroke-linecap="round"/>';
+        extra = '<path d="M86 13 l2.4 5 5.4.8 -3.9 3.8 .9 5.4 -4.8 -2.6 -4.8 2.6 .9 -5.4 -3.9 -3.8 5.4 -.8z" fill="#ffd60a"/>';
+        cheeks = 0.9; break;
+      default: // happy
+        eyes = eye(L, EY) + eye(R, EY);
+        mouth = '<path d="M45.5 72 q2.25 2.6 4.5 0 q2.25 2.6 4.5 0" stroke="' + K + '" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>';
+    }
+    return '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">' +
+      // ears: small and round, set wide
+      '<circle cx="21" cy="30" r="12" fill="' + K + '"/><circle cx="79" cy="30" r="12" fill="' + K + '"/>' +
+      '<circle cx="22" cy="31" r="5.5" fill="#4a3f47"/><circle cx="78" cy="31" r="5.5" fill="#4a3f47"/>' +
+      // head: wide and soft
+      '<ellipse cx="50" cy="60" rx="41" ry="34" fill="' + W + '"/>' +
+      '<ellipse cx="50" cy="67" rx="36" ry="24" fill="#f7f6fa"/>' +
+      '<ellipse cx="50" cy="60" rx="41" ry="34" fill="none" stroke="rgba(0,0,0,.07)" stroke-width="1.2"/>' +
+      // soft droopy eye patches (teardrop, tilted outwards and down)
+      '<path d="M' + (L + 7) + ' ' + (EY - 8) + ' C' + (L + 11) + ' ' + (EY + 2) + ' ' + (L + 4) + ' ' + (EY + 12) + ' ' + (L - 5) + ' ' + (EY + 10) + ' C' + (L - 12) + ' ' + (EY + 8) + ' ' + (L - 10) + ' ' + (EY - 4) + ' ' + (L - 4) + ' ' + (EY - 9) + ' C' + (L - 1) + ' ' + (EY - 11) + ' ' + (L + 4) + ' ' + (EY - 11) + ' ' + (L + 7) + ' ' + (EY - 8) + 'z" fill="' + K + '"/>' +
+      '<path d="M' + (R - 7) + ' ' + (EY - 8) + ' C' + (R - 11) + ' ' + (EY + 2) + ' ' + (R - 4) + ' ' + (EY + 12) + ' ' + (R + 5) + ' ' + (EY + 10) + ' C' + (R + 12) + ' ' + (EY + 8) + ' ' + (R + 10) + ' ' + (EY - 4) + ' ' + (R + 4) + ' ' + (EY - 9) + ' C' + (R + 1) + ' ' + (EY - 11) + ' ' + (R - 4) + ' ' + (EY - 11) + ' ' + (R - 7) + ' ' + (EY - 8) + 'z" fill="' + K + '"/>' +
+      brow + eyes +
+      '<ellipse cx="24" cy="73" rx="6.5" ry="4" fill="' + P + '" opacity="' + cheeks + '"/><ellipse cx="76" cy="73" rx="6.5" ry="4" fill="' + P + '" opacity="' + cheeks + '"/>' +
+      // tiny round nose with a shine
+      '<ellipse cx="50" cy="67.6" rx="3.6" ry="2.6" fill="' + K + '"/><ellipse cx="49" cy="66.8" rx="1.2" ry=".7" fill="' + W + '" opacity=".6"/>' +
+      mouth + extra + '</svg>';
+  }
+  function pandaMood(h) {
+    var hr = new Date().getHours(), bl = h.blocks || [];
+    if (bl.some(function (b) { return b.missed; })) return 'worried';
+    var done = (cache.now && cache.now.stats && cache.now.stats.plant && cache.now.stats.plant.done) || bl.filter(function (b) { return b.done; }).length;
+    var left = bl.filter(function (b) { return !b.done && !b.past && !b.allDay && b.type !== 'suggestion' && b.type !== 'gift' && new Date(b.start) > new Date(); }).length;
+    if (h.isToday && done > 0 && !left) return 'excited';
+    if (hr >= 21 || hr < 6 || (h.isToday && !left && !done)) return 'sleepy';
+    if (done >= 3) return 'proud';
+    return 'happy';
+  }
+
   // ================= NOTES + PLANT =================
   var notes = [];
   // Deleted notes stay hidden even if an older list arrives before the server has removed them
@@ -1497,6 +1578,33 @@ html.lk-cl.t-light .blk,html.lk-cl.t-light .card,html.lk-cl.t-light .nt,html.lk-
   function openSheet(id) { closeSheet(); openId = id; $(id).classList.add('on'); $('dim').classList.add('on'); }
   function closeSheet() { if (!openId) return; $(openId).classList.remove('on'); $('dim').classList.remove('on'); if (openId === 's-mic') stopListening(); openId = null; }
   $('dim').onclick = closeSheet;
+  // Pull a sheet down from the top to close it (like iPhone sheets).
+  [].forEach.call(document.querySelectorAll('.sheet'), function (sh) {
+    var y0 = 0, x0 = 0, dy = 0, on = false, dead = false;
+    sh.addEventListener('touchstart', function (e) {
+      on = false; dead = false; dy = 0;
+      if (e.touches.length !== 1 || sh.scrollTop > 0 || e.target.closest('input,textarea,select,[contenteditable]')) { dead = true; return; }
+      y0 = e.touches[0].clientY; x0 = e.touches[0].clientX;
+    }, { passive: true });
+    sh.addEventListener('touchmove', function (e) {
+      if (dead) return;
+      var y = e.touches[0].clientY - y0, x = e.touches[0].clientX - x0;
+      if (!on) {
+        if (y < -4 || Math.abs(x) > Math.abs(y) + 4 || sh.scrollTop > 0) { dead = true; return; }
+        if (y < 8) return;
+        on = true; sh.classList.add('drag');
+      }
+      dy = Math.max(0, y); e.preventDefault();
+      sh.style.transform = 'translateY(' + dy + 'px)';
+      $('dim').style.opacity = String(Math.max(0.2, 1 - dy / 400));
+    }, { passive: false });
+    var end = function () {
+      if (!on) return; on = false; sh.classList.remove('drag'); $('dim').style.opacity = '';
+      if (dy > Math.min(140, sh.offsetHeight * 0.25)) { sh.style.transform = 'translateY(105%)'; closeSheet(); setTimeout(function () { sh.style.transform = ''; }, 300); }
+      else sh.style.transform = '';
+    };
+    sh.addEventListener('touchend', end); sh.addEventListener('touchcancel', end);
+  });
   document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeSheet(); });
 
   // ---------- Mic ----------
