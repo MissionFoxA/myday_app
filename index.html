@@ -419,7 +419,7 @@ html.tod-night{--g1:#3a6fd1;--g2:#7b6cd9;--g3:#2f8f7f}
 .fabl{position:fixed;z-index:21;bottom:calc(84px + env(safe-area-inset-bottom));left:max(18px,calc(50% - 222px));height:58px;padding:0 20px 0 16px;border-radius:29px;
   display:none;align-items:center;gap:6px;font-weight:600;font-size:16px;background:var(--p);color:var(--on);box-shadow:0 10px 24px -6px var(--p)}
 .fabl svg{width:22px;height:22px}
-html.on-notes .fabl{display:flex}
+html.on-notes #nt-new,html.on-home #h-new{display:flex}
 html.standalone .fabl{position:absolute}
 /* dates found in a note */
 .ndt{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:10px;padding:9px 10px;border-radius:14px;background:color-mix(in srgb,var(--s) 70%,transparent);border:1px solid var(--gb)}
@@ -543,6 +543,7 @@ button:active:not([disabled]),.btn:active,[role=button]:active{transform:scale(.
 
 <!-- tab bar + mic -->
 <button class="fab" id="fab" aria-label="Say a reminder or note"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="9" y="3" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></button>
+<button class="fabl" id="h-new" aria-label="New event on this day"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>Event</button>
 <button class="fabl" id="nt-new" aria-label="New note"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>Note</button>
 <nav class="tabs"><div class="in">
   <button data-v="home" class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16"/></svg>Home</button>
@@ -776,7 +777,7 @@ button:active:not([disabled]),.btn:active,[role=button]:active{transform:scale(.
   function show(v, swiped) {
     var from = TABS.indexOf(current), to = TABS.indexOf(v), sv = document.getElementById('v-' + v), dist = swiped ? 90 : 28;
     if (sv) { sv.style.setProperty('--vx', from < 0 || to < 0 || from === to ? '0px' : (to > from ? dist : -dist) + 'px'); sv.style.setProperty('--vy', from === to ? '6px' : '0px'); }
-    current = v; document.documentElement.classList.toggle('on-notes', v === 'notes');
+    current = v; document.documentElement.classList.toggle('on-notes', v === 'notes'); document.documentElement.classList.toggle('on-home', v === 'home');
     [].forEach.call(document.querySelectorAll('.view'), function (s) { s.classList.toggle('on', s.id === 'v-' + v); });
     [].forEach.call(document.querySelectorAll('.tabs button'), function (b) { b.classList.toggle('on', b.dataset.v === v); });
     window.scrollTo(0, 0); var ap = document.querySelector('.app'); if (ap) ap.scrollTop = 0;
@@ -824,6 +825,7 @@ button:active:not([disabled]),.btn:active,[role=button]:active{transform:scale(.
   loaders.home = function () { loadHome(); };
   var homeDayShown = null;
   function renderHome(h) {
+    if (h.blocks && GONE_EV.length) h = Object.assign({}, h, { blocks: h.blocks.filter(function (b) { return b.type !== 'event' || !evGone(b); }) });
     if (h.isToday && h.woke !== undefined) showWoke(h.woke);
     var hdir = homeDayShown && homeDayShown !== h.day ? (new Date(h.day) > new Date(homeDayShown) ? 1 : -1) : 0; homeDayShown = h.day;
     $('h-lvl').textContent = 'Lv ' + h.stats.level;
@@ -1461,11 +1463,21 @@ button:active:not([disabled]),.btn:active,[role=button]:active{transform:scale(.
     try { store('calchunks', JSON.stringify(keep)); } catch (e) {}
   }
   /** Merged data for a range, or null when a month is missing. */
+  // Events deleted on this phone: hidden at once, and kept hidden until the server has caught up.
+  var GONE_EV = [];
+  function evGone(e) {
+    for (var i = 0; i < GONE_EV.length; i++) { var g = GONE_EV[i];
+      if (e.id !== g.id) continue;
+      if (g.scope === 'all') return true;
+      if (g.scope === 'this' && e.start === g.start) return true;
+      if (g.scope === 'future' && e.start >= g.start) return true; }
+    return false;
+  }
   function calData(r) {
     var ks = monthsIn(r), ev = {}, rem = {}, out = { events: [], reminders: [] };
     for (var i = 0; i < ks.length; i++) if (!CHUNKS[ks[i]]) return null;
     ks.forEach(function (k) {
-      CHUNKS[k].events.forEach(function (e) { if (!ev[e.key] && new Date(e.start) < r[1] && new Date(e.end) > r[0]) { ev[e.key] = 1; out.events.push(e); } });
+      CHUNKS[k].events.forEach(function (e) { if (evGone(e)) return; if (!ev[e.key] && new Date(e.start) < r[1] && new Date(e.end) > r[0]) { ev[e.key] = 1; out.events.push(e); } });
       CHUNKS[k].reminders.forEach(function (x) { var d = new Date(x.due); if (!rem[x.id] && d >= r[0] && d < r[1]) { rem[x.id] = 1; out.reminders.push(x); } });
     });
     out.events.sort(function (a, b) { return a.start < b.start ? -1 : a.start > b.start ? 1 : 0; });
@@ -1893,10 +1905,18 @@ button:active:not([disabled]),.btn:active,[role=button]:active{transform:scale(.
     askScope(ev, 'delete', function (scope) {
       if (!scope) return;
       closeSheet();
-      if (scope === 'all' || !ev.repeat || ev.repeat === 'none') calLocal(null, ev.id);
+      var g = { id: ev.id, start: new Date(ev.start).toISOString(), scope: (!ev.repeat || ev.repeat === 'none') ? 'all' : scope };
+      GONE_EV.push(g);
+      if (g.scope === 'all') calLocal(null, ev.id); else if (CAL.open) calRender();
+      homeShown = ''; if (homeDayShown && homeDays[dKey(homeDayShown)]) showHome(homeDays[dKey(homeDayShown)]);
+      toast('Event deleted');
       call('apiDeleteEvent', ev.id, ev.start, scope).then(function () {
-        toast('Event deleted'); calRefresh(); if (!CAL.open && loaders[current]) loaders[current]();
-      }).catch(fail);
+        calRefresh(); scheduleAlerts(); if (!CAL.open && loaders[current]) loaders[current]();
+        setTimeout(function () { GONE_EV = GONE_EV.filter(function (x) { return x !== g; }); }, 120e3);
+      }).catch(function (x) {
+        GONE_EV = GONE_EV.filter(function (y) { return y !== g; });
+        fail(x); calRefresh(); homeShown = ''; if (homeDayShown && homeDays[dKey(homeDayShown)]) showHome(homeDays[dKey(homeDayShown)]);
+      });
     });
   };
 
@@ -1930,7 +1950,13 @@ button:active:not([disabled]),.btn:active,[role=button]:active{transform:scale(.
   document.addEventListener('visibilitychange', function () { if (!document.hidden) scheduleAlerts(); });
 
   // Home: calendar button, month name, and tapping an event open the calendar
-  $('b-cal').onclick = function () { openCalendar(null, homeDay || new Date()); };
+  $('b-cal').onclick = function () { openCalendar('month', homeDay || new Date()); };
+  document.documentElement.classList.toggle('on-home', current === 'home');
+  $('h-new').onclick = function () {
+    var s = d0(homeDay ? new Date(homeDay) : new Date()), now = new Date();
+    s.setHours(sameDay(s, now) ? Math.min(23, now.getHours() + 1) : 9);
+    openEditor(null, s);
+  };
   $('h-month').onclick = function () { openCalendar('month', homeDay || new Date()); };
 
   // No zooming: iPhone ignores the page settings for pinch and double-tap, so block them here.
