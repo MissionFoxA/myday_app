@@ -508,7 +508,7 @@ button,.btn,[role=button]{transition:transform .14s cubic-bezier(.3,.7,.4,1.4),b
 button:active:not([disabled]),.btn:active,[role=button]:active{transform:scale(.95)}
 .tabs button:active{transform:scale(.92)}
 /* screen changes slide in from the side you came from */
-.view.on{animation:vin .32s cubic-bezier(.2,.8,.3,1)}
+.view.on{animation:vin .42s cubic-bezier(.45,0,.2,1)}
 @keyframes vin{from{opacity:0;transform:translateX(var(--vx,0)) translateY(var(--vy,6px))}}
 /* rewards */
 .conf{position:fixed;z-index:42;width:9px;height:14px;border-radius:3px;pointer-events:none;top:0;left:0}
@@ -715,7 +715,7 @@ html.tabdrag .view.on{will-change:transform;position:relative;z-index:3}
 .view.noanim{animation:none!important}
 .tabs .in{position:relative}
 .tabs .in::before{content:"";position:absolute;top:0;bottom:0;left:0;width:calc(100% / 4);border-radius:28px;background:color-mix(in srgb,var(--t) 10%,transparent);
-  transform:translateX(calc(var(--ti,0) * 100%));transition:transform .42s cubic-bezier(.3,1.35,.5,1);pointer-events:none}
+  transform:translateX(calc(var(--ti,0) * 100%));transition:transform var(--tdur,.45s) cubic-bezier(.45,0,.2,1);pointer-events:none}
 .tabs .in.drag::before{transition:none}
 .tabs button.on,html.lk-cl .tabs button.on{background:transparent!important}
 .tabs button{position:relative;transition:color .25s,transform .18s cubic-bezier(.3,1.5,.5,1)}
@@ -2635,9 +2635,12 @@ button,.btn,.ib,.blk,.em,.nt,.lane h3,.wk button,.lev,.gev{transition:transform 
       if (mode !== 'h') { x0 = null; mode = mode === 'anim' ? 'anim' : ''; return; }
       x0 = null;
       var go = nb && (Math.abs(dxNow) > W * 0.28 || (Math.abs(vx) > 0.45 && (vx < 0) === (dxNow < 0)));
-      var dur = reduce ? 0 : go ? Math.max(160, Math.min(320, (W - Math.abs(dxNow)) / Math.max(0.6, Math.abs(vx)))) : 380;
-      var ease = go ? 'cubic-bezier(.2,.8,.25,1)' : 'cubic-bezier(.3,1.45,.5,1)';
+      // smooth ease-in-out: longer when there is further to go, a little shorter after a fast flick
+      var left = go ? W - Math.abs(dxNow) : Math.abs(dxNow);
+      var dur = reduce ? 0 : Math.round(Math.max(380, Math.min(560, 300 + left * 0.9 - Math.min(0.6, Math.abs(vx)) * 120)));
+      var ease = 'cubic-bezier(.45,0,.2,1)';
       mode = 'anim'; tin.classList.remove('drag');
+      tin.style.setProperty('--tdur', dur + 'ms');
       cur.style.transition = 'transform ' + dur + 'ms ' + ease; if (nb) nb.style.transition = 'transform ' + dur + 'ms ' + ease;
       var target = go ? (dxNow < 0 ? -W : W) : 0;
       void cur.offsetWidth;
@@ -2648,7 +2651,7 @@ button,.btn,.ib,.blk,.em,.nt,.lane h3,.wk button,.lev,.gev{transition:transform 
         if (done) return; done = true; cur.removeEventListener('transitionend', land);
         if (go) { $('v-' + to).classList.add('noanim'); cleanup(); show(to, 'drag'); }
         else cleanup();
-        tin.style.removeProperty('--ti'); setTabPill();
+        tin.style.removeProperty('--ti'); setTabPill(); setTimeout(function () { tin.style.removeProperty('--tdur'); }, 600);
       }
       cur.addEventListener('transitionend', land); setTimeout(land, dur + 60);
     }
