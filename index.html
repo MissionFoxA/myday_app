@@ -668,6 +668,46 @@ html.lk-cl .wk i.no,.wk i.no{background:transparent!important}
 .lane.ads .q{display:flex;gap:8px}
 .adl{display:block;padding:8px 2px;font-size:14px;color:var(--m);border-top:1px solid var(--ln);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .adl b{color:var(--t);font-weight:600}
+
+/* cleanup: one-line buddy, one + button, flat dates, thin level bar */
+.bub{align-items:center!important}
+.bub p{flex:1;min-width:0;margin-bottom:0!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:default}
+.bub p.more{cursor:pointer;padding-right:30px!important}
+.bub p.more::after{content:"";position:absolute;right:14px;top:50%;width:7px;height:7px;margin-top:-5px;border-right:2px solid var(--m);border-bottom:2px solid var(--m);transform:rotate(45deg);transition:transform .2s}
+.bub p[aria-expanded=true]{white-space:normal}
+.bub p[aria-expanded=true]::after{transform:rotate(-135deg);margin-top:-1px}
+.bub>i.panda{width:56px!important;height:56px!important}
+.fabl{display:none!important}
+#plus svg{width:28px;height:28px;transition:transform .2s}
+html.menu-on #plus svg{transform:rotate(45deg)}
+.addmenu{position:fixed;z-index:22;right:max(18px,calc(50% - 222px));bottom:calc(152px + env(safe-area-inset-bottom));display:flex;flex-direction:column;align-items:flex-end;gap:10px;pointer-events:none}
+html.standalone .addmenu{position:absolute}
+.addmenu button{display:flex;align-items:center;gap:10px;height:48px;padding:0 18px 0 14px;border-radius:24px;font-size:16px;font-weight:600;color:var(--t);
+  background:var(--glt,var(--s));-webkit-backdrop-filter:blur(22px);backdrop-filter:blur(22px);box-shadow:0 8px 24px -10px #000a,inset 0 0 0 .5px var(--glb,var(--ln));
+  opacity:0;transform:translateY(12px) scale(.96);transition:opacity .18s,transform .18s}
+.addmenu button svg{width:20px;height:20px;color:var(--p)}
+.addmenu.on{pointer-events:auto}
+.addmenu.on button{opacity:1;transform:none}
+.addmenu.on button:nth-child(2){transition-delay:.03s}.addmenu.on button:nth-child(3){transition-delay:.06s}.addmenu.on button:nth-child(4){transition-delay:.09s}
+.app{padding-bottom:150px}
+#h-blocks{padding-bottom:40px}
+.ndt{flex-wrap:nowrap;gap:8px;margin-top:8px;padding:8px 0 0;border-radius:0;background:none!important;border:0;border-top:1px solid var(--ln)}
+.ndt .ic{width:22px;height:22px;border-radius:0;background:none;color:var(--a)}
+.ndt .ic svg{width:18px;height:18px}
+.ndt>div{min-width:0}
+.ndt b{font-size:14px;font-weight:600}
+.ndt .q .btn.sm{min-height:32px;padding:0 12px}
+.lvbar{margin:-4px 0 4px}
+.lvt{display:flex;align-items:baseline;gap:8px;font-size:14px;color:var(--m);margin-bottom:6px}
+.lvt b{color:var(--t);font-size:15px;font-weight:600}
+.lvt .lvl2{margin-left:auto}
+.lvtrack{height:6px;border-radius:3px;background:color-mix(in srgb,var(--t) 12%,transparent);overflow:hidden}
+.lvtrack i{display:block;height:100%;border-radius:3px;background:var(--p);transition:width .6s}
+.stack{height:auto!important;margin-top:28px!important}
+.cd.front{position:relative;min-height:200px}
+.cd .acts{margin-top:18px}
+.app{transition:opacity .18s}
+html.menu-on .app{opacity:.3}
 </style>
 </head>
 <body>
@@ -680,14 +720,14 @@ html.lk-cl .wk i.no,.wk i.no{background:transparent!important}
       <button class="ib" id="b-cal" aria-label="Open calendar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4.5" width="18" height="16.5" rx="3"/><path d="M3 9.5h18M8 2.5v4M16 2.5v4"/><path d="M7.5 13.5h2M11 13.5h2M14.5 13.5h2M7.5 17h2M11 17h2"/></svg></button><button class="ib" id="b-settings" aria-label="Settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3h0a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8v0a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button></div></div>
     <div class="wkh"><div class="wkl"><span id="h-month"></span><span class="pill woke" id="h-woke" hidden></span><span class="pill" id="h-lvl">Lv 1</span></div><div class="nav"><button id="wk-prev" aria-label="Previous week"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="m15 6-6 6 6 6"/></svg></button><button id="wk-next" aria-label="Next week"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="m9 6 6 6-6 6"/></svg></button></div></div>
     <div class="wk" id="h-week"></div>
-    <div class="bub" id="h-bub" hidden><i class="panda" id="h-panda"></i><p id="h-buddy"></p></div>
+    <div class="bub" id="h-bub" hidden><i class="panda" id="h-panda"></i><p id="h-buddy" role="button" tabindex="0" aria-expanded="false"></p></div>
     <div id="h-blocks"><div class="skel"></div><div class="skel"></div><div class="skel"></div></div>
   </section>
 
   <!-- ================= NOW ================= -->
   <section class="view" id="v-now" aria-label="Now">
-    <div class="top"><h1>Right now</h1><span class="pill" id="n-xp">0 XP</span></div>
-    <div class="xp"><div class="ringw"><svg viewBox="0 0 100 100"><circle class="bg" cx="50" cy="50" r="42"/><circle class="fg" id="n-ring" cx="50" cy="50" r="42"/></svg><b id="n-lvn">1</b></div><div class="bar"><i id="n-bar" style="width:0"></i></div><div class="lb"><span id="n-lvl">Level 1</span><span id="n-left"></span><span id="n-woke" class="nwoke" hidden></span></div></div>
+    <div class="top"><h1>Right now</h1></div>
+    <div class="lvbar" aria-label="Level and XP"><div class="lvt"><b id="n-lvl">Level 1</b><span id="n-xp">0 XP</span><span id="n-woke" class="nwoke" hidden></span><span class="lvl2" id="n-left"></span></div><div class="lvtrack"><i id="n-bar" style="width:0"></i></div></div>
     <div id="n-body"><div class="skel" style="height:320px;margin-top:30px"></div></div>
   </section>
 
@@ -711,7 +751,8 @@ html.lk-cl .wk i.no,.wk i.no{background:transparent!important}
 </div>
 
 <!-- tab bar + mic -->
-<button class="fab" id="fab" aria-label="Say a reminder or note"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="9" y="3" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></button>
+<button class="fab" id="plus" aria-label="Add something" aria-expanded="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button>
+<div class="addmenu" id="addmenu" role="menu" aria-label="Add"><button role="menuitem" id="fab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="9" y="3" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>Say it</button><button role="menuitem" id="am-rem"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2.5M9 2h6"/></svg>Reminder</button><button role="menuitem" id="am-ev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/></svg>Event</button><button role="menuitem" id="am-note"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1"><path d="M6 3h9l4 4v14H6z"/><path d="M9 12h7M9 16h5"/></svg>Note</button></div>
 <button class="fabl" id="h-new" aria-label="New event on this day"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>Event</button>
 <button class="fabl" id="nt-new" aria-label="New note"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>Note</button>
 <nav class="tabs"><div class="in">
@@ -1122,7 +1163,11 @@ html.lk-cl .wk i.no,.wk i.no{background:transparent!important}
     [].forEach.call($('h-week').children, function (b) { b.onclick = function () { loadHome(sameDay(b.dataset.d, new Date()) ? null : b.dataset.d); }; });
     $('wk-prev').onclick = function () { var d = new Date(h.day); d.setDate(d.getDate() - 7); loadHome(d.toISOString()); };
     $('wk-next').onclick = function () { var d = new Date(h.day); d.setDate(d.getDate() + 7); loadHome(d.toISOString()); };
-    $('h-bub').hidden = !h.buddy; $('h-buddy').textContent = h.buddy;
+    $('h-bub').hidden = !h.buddy;
+    var bshort = h.buddyShort || h.buddy, bfull = $('h-buddy').getAttribute('aria-expanded') === 'true';
+    $('h-buddy').textContent = bfull ? h.buddy : bshort; $('h-buddy').classList.toggle('more', bshort !== h.buddy);
+    $('h-buddy').onclick = $('h-buddy').onkeydown = function (k) { if (k.type === 'keydown' && k.key !== 'Enter') return; if (bshort === h.buddy) return;
+      var open = this.getAttribute('aria-expanded') !== 'true'; this.setAttribute('aria-expanded', open); this.textContent = open ? h.buddy : bshort; };
     if (h.buddy) { var mood = pandaMood(h); if ($('h-panda').dataset.m !== mood) { $('h-panda').dataset.m = mood; $('h-panda').innerHTML = panda(mood); $('h-panda').classList.remove('pop'); void $('h-panda').offsetWidth; $('h-panda').classList.add('pop'); } }
     if (!h.blocks.length) {
       $('h-blocks').innerHTML = '<div class="empty">' + (h.isToday ? 'Nothing planned today. Tap the orange button to add something.' : 'Nothing planned on ' + esc(dayName(h.day, { weekday: 'long' })) + '.') + '</div>';
@@ -1219,9 +1264,7 @@ html.lk-cl .wk i.no,.wk i.no{background:transparent!important}
     $('n-xp').textContent = st.xp + ' XP';
     $('n-bar').style.width = Math.round(st.xpInLevel / st.perLevel * 100) + '%';
     $('n-lvl').textContent = 'Level ' + st.level;
-    $('n-lvn').textContent = st.level;
-    $('n-ring').style.strokeDashoffset = String(264 - 264 * Math.min(1, st.xpInLevel / st.perLevel));
-    $('n-left').textContent = (st.perLevel - st.xpInLevel) + ' XP to level ' + (st.level + 1);
+    $('n-left').textContent = (st.perLevel - st.xpInLevel) + ' to level ' + (st.level + 1);
   }
   function cardHtml(c) {
     var tag, lines = [], acts;
@@ -1329,7 +1372,7 @@ html.lk-cl .wk i.no,.wk i.no{background:transparent!important}
   function emItem(m, needs) {
     var dts = (m.suggestions || []).filter(function (d) { return !sugGone[d.id]; }).map(function (d) {
       return '<div class="ndt"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/></svg></span>' +
-        '<div><b>' + esc(d.title) + '</b><small>' + esc(whenLabel(d.start, d.allDay)) + ' · add to calendar?</small></div>' +
+        '<div><b>' + esc(whenLabel(d.start, d.allDay)) + '</b></div>' +
         '<span class="q"><button class="btn a sm" data-sug="' + esc(d.id) + '">Add</button><button class="btn o sm" data-sugno="' + esc(d.id) + '">No</button></span></div>';
     }).join('');
     return '<div class="em"><span class="av">' + esc(initials(m.name)) + '</span><div style="flex:1"><b>' + esc(m.name) + '</b><small>' + esc(m.subject) + '</small>' +
@@ -1496,7 +1539,7 @@ html.lk-cl .wk i.no,.wk i.no{background:transparent!important}
     $('nt-list').innerHTML = list.map(function (n, i) {
       var dts = (n.dates || []).map(function (d, j) {
         return '<div class="ndt"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/></svg></span>' +
-          '<div><b>' + esc(d.title) + '</b><small>' + esc(whenLabel(d.start, d.allDay)) + ' · add to calendar?</small></div>' +
+          '<div><b>' + esc(whenLabel(d.start, d.allDay)) + '</b></div>' +
           '<span class="q"><button class="btn a sm" data-nadd="' + esc(n.id) + '|' + j + '">Add</button><button class="btn o sm" data-nno="' + esc(n.id) + '|' + j + '">No</button></span></div>';
       }).join('');
       return '<div class="nt" style="--c:' + tints[i % 3] + '"><div><p>' + esc(n.text) + '</p><small>' + esc(whenLabel(n.created)) + '</small>' + dts + '</div>' +
@@ -1657,8 +1700,17 @@ html.lk-cl .wk i.no,.wk i.no{background:transparent!important}
   // ---------- Mic ----------
   $('m-wave').innerHTML = [12, 26, 40, 22, 44, 30, 14, 36, 44, 28, 18, 40, 24, 10].map(function (h) { return '<i style="--h:' + h + 'px"></i>'; }).join('');
   var SR = window.SpeechRecognition || window.webkitSpeechRecognition, rec = null;
+  function addMenu(open) { $('addmenu').classList.toggle('on', open); $('plus').setAttribute('aria-expanded', open); document.documentElement.classList.toggle('menu-on', open); }
+  $('plus').onclick = function (e) { e.stopPropagation(); addMenu(!$('addmenu').classList.contains('on')); };
+  document.addEventListener('click', function (e) { if ($('addmenu').classList.contains('on') && !e.target.closest('#addmenu,#plus')) addMenu(false); });
+  $('am-ev').onclick = function () { addMenu(false); $('h-new').onclick(); };
+  $('am-note').onclick = function () { addMenu(false); if (current !== 'notes') show('notes'); setTimeout(function () { $('nt-new').onclick(); }, 50); };
+  $('am-rem').onclick = function () {
+    addMenu(false); openSheet('s-mic'); checking = ''; $('m-result').innerHTML = ''; $('m-said').textContent = ''; $('m-text').value = '';
+    $('m-state').textContent = 'Type the reminder with a time, like "call grandma tomorrow 17:00"'; setTimeout(function () { $('m-text').focus(); }, 250);
+  };
   $('fab').onclick = function () {
-    openSheet('s-mic'); checking = ''; $('m-result').innerHTML = ''; $('m-said').textContent = ''; $('m-text').value = '';
+    addMenu(false); openSheet('s-mic'); checking = ''; $('m-result').innerHTML = ''; $('m-said').textContent = ''; $('m-text').value = '';
     if (SR) startListening(); else { $('m-state').textContent = 'Type it, or tap the microphone on your keyboard'; $('m-text').focus(); }
   };
   function voiceLang() { return store('lang') || (/^hu/i.test(LOC) ? 'hu-HU' : 'en-US'); }
