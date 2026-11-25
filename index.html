@@ -1501,7 +1501,7 @@ html.lk-cl.t-light .blk,html.lk-cl.t-light .card,html.lk-cl.t-light .nt,html.lk-
   $('m-wave').innerHTML = [12, 26, 40, 22, 44, 30, 14, 36, 44, 28, 18, 40, 24, 10].map(function (h) { return '<i style="--h:' + h + 'px"></i>'; }).join('');
   var SR = window.SpeechRecognition || window.webkitSpeechRecognition, rec = null;
   $('fab').onclick = function () {
-    openSheet('s-mic'); $('m-result').innerHTML = ''; $('m-said').textContent = ''; $('m-text').value = '';
+    openSheet('s-mic'); checking = ''; $('m-result').innerHTML = ''; $('m-said').textContent = ''; $('m-text').value = '';
     if (SR) startListening(); else { $('m-state').textContent = 'Type it, or tap the microphone on your keyboard'; $('m-text').focus(); }
   };
   $('m-btn').onclick = function () { if (rec) stopListening(); else if (SR) startListening(); else { $('m-state').textContent = 'Voice isn\'t available here. Type it, or use your keyboard\'s microphone.'; $('m-text').focus(); } };
@@ -1548,8 +1548,10 @@ html.lk-cl.t-light .blk,html.lk-cl.t-light .card,html.lk-cl.t-light .nt,html.lk-
   $('m-check').onclick = function () { check($('m-text').value); };
   $('m-text').onkeydown = function (e) { if (e.key === 'Enter') check($('m-text').value); };
   function localInput(iso) { var d = iso ? new Date(iso) : new Date(Date.now() + 3600e3); d.setSeconds(0, 0); return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16); }
+  var checking = '';
   function check(text) {
-    text = String(text || '').trim(); if (!text) return;
+    text = String(text || '').trim(); if (!text || text === checking) return;
+    checking = text; setTimeout(function () { if (checking === text) checking = ''; }, 4000);
     $('m-said').textContent = '"' + text + '"';
     $('m-result').innerHTML = '<div class="skel" style="margin-top:12px"></div>';
     call('apiParseSpoken', text).then(function (p) {
@@ -1562,9 +1564,9 @@ html.lk-cl.t-light .blk,html.lk-cl.t-light .card,html.lk-cl.t-light .nt,html.lk-
         $('m-save').onclick = function () {
           var due = new Date($('m-due').value);
           if (isNaN(due)) { toast('Pick a time first', { err: true }); return; }
-          this.disabled = true;
-          call('apiAddReminder', $('m-title').value, due.toISOString()).then(function () { closeSheet(); toast('Reminder set for ' + whenLabel(due.toISOString())); if (loaders[current]) loaders[current](); })
-            .catch(function (e) { $('m-save').disabled = false; fail(e); });
+          this.disabled = true; var title = $('m-title').value;
+          closeSheet(); toast('Reminder set for ' + whenLabel(due.toISOString()));
+          call('apiAddReminder', title, due.toISOString()).then(function () { if (loaders[current]) loaders[current](); }).catch(fail);
         };
         $('m-note').onclick = function () { saveNote($('m-title').value); };
       } else {
@@ -1575,8 +1577,14 @@ html.lk-cl.t-light .blk,html.lk-cl.t-light .card,html.lk-cl.t-light .nt,html.lk-
       }
     }).catch(function (e) { $('m-result').innerHTML = ''; fail(e); });
   }
+  // Saving from the voice sheet: close at once and show the note straight away, so one tap is enough.
   function saveNote(t) {
-    call('apiAddNote', t).then(function (l) { setNotes(l); closeSheet(); toast('Note saved'); if (current === 'notes') renderNotes(); }).catch(fail);
+    t = String(t || '').trim(); if (!t) return;
+    closeSheet(); toast('Note saved');
+    notes.unshift({ id: 'new', text: t, created: new Date().toISOString() }); rawNotes = [notes[0]].concat(rawNotes);
+    if (current === 'notes') renderNotes();
+    call('apiAddNote', t).then(function (l) { setNotes(l); if (current === 'notes') renderNotes(); })
+      .catch(function (e) { fail(e); loaders.notes && current === 'notes' && loaders.notes(); });
   }
 
   // ---------- Settings ----------
