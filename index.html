@@ -1,12 +1,12 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="lk-cl">
 <head>
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="My day">
-<meta name="theme-color" content="#1b1c20" media="(prefers-color-scheme: dark)">
-<meta name="theme-color" content="#fff8f4" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#05060c" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#eef0f7" media="(prefers-color-scheme: light)">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="icon" type="image/png" href="icon-192.png">
@@ -530,6 +530,112 @@ button:active:not([disabled]),.btn:active,[role=button]:active{transform:scale(.
 .blk.now .eico{background:color-mix(in srgb,var(--on) 18%,transparent);color:var(--on)}
 .eico svg{width:17px;height:17px}
 @media(prefers-reduced-motion:reduce){.glow i{transition:none}}
+/* ===== Glass look (Apple style) ===== */
+/* CLEAN: iOS-style. True black (dark) / system grey (light), roomy rounded cards, bold large titles, colour only on icons and labels */
+html.lk-cl:root{--g:#000;--s:#1c1c1e;--s2:#2c2c2e;--t:#fff;--m:#98989f;--p:#0a84ff;--on:#fff;--a:#ff9f0a;--ona:#1a1000;--ln:#ffffff14;--sep:#38383a;
+  --c1:#ff375f;--c2:#30d158;--c3:#ff9f0a;--c4:#bf5af2;--v:#bf5af2;
+  --cb-blue:#0a84ff;--cb-orange:#ff9f0a;--cb-pink:#ff375f;--cb-green:#30d158;--cb-purple:#bf5af2;--red:#ff453a;--bar:rgba(28,28,30,.78)}
+@media (prefers-color-scheme: light){html.lk-cl:root:not(.t-dark){--g:#f2f2f7;--s:#fff;--s2:#e9e9ee;--t:#000;--m:#6c6c70;--p:#007aff;--on:#fff;--a:#ff9500;--ona:#fff;--ln:#0000000f;--sep:#c6c6c8;
+  --c1:#ff2d55;--c2:#34c759;--c3:#ff9500;--c4:#af52de;--v:#af52de;
+  --cb-blue:#007aff;--cb-orange:#ff9500;--cb-pink:#ff2d55;--cb-green:#34c759;--cb-purple:#af52de;--red:#ff3b30;--bar:rgba(255,255,255,.8)}}
+html.lk-cl body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Inter",system-ui,sans-serif;letter-spacing:-.01em}
+html.lk-cl .glow{background:var(--g)!important}html.lk-cl .glow i{display:none}
+html.lk-cl .card,html.lk-cl .wk button,html.lk-cl .bub p,html.lk-cl .em,html.lk-cl .pill,html.lk-cl .ib,html.lk-cl .lane,html.lk-cl .nt,html.lk-cl .cd.front,html.lk-cl .xp,html.lk-cl .got,html.lk-cl .srch,html.lk-cl .blk,html.lk-cl .cd.b1,html.lk-cl .cd.b2,html.lk-cl .nextbar{
+  -webkit-backdrop-filter:none!important;backdrop-filter:none!important;background:var(--s)!important;border:0!important;box-shadow:none!important}
+/* large titles */
+html.lk-cl .top h1{font-size:34px;font-weight:700;letter-spacing:-.02em}
+html.lk-cl .wkh{font-size:15px;font-weight:600;color:var(--m);text-transform:uppercase;letter-spacing:.02em}
+html.lk-cl .wkh .nav button{color:var(--p)}
+/* round icon buttons and pill */
+html.lk-cl .ib{border-radius:50%!important;color:var(--p)}
+html.lk-cl .pill{border-radius:20px;color:var(--a)}
+/* week strip: quiet days, selected day as a filled blue tile */
+html.lk-cl .wk button{border-radius:16px!important;color:var(--m)}
+html.lk-cl .wk b{color:var(--t);font-weight:600}
+html.lk-cl .wk .sel{background:var(--p)!important}
+html.lk-cl .wk .sel,html.lk-cl .wk .sel *{color:#fff!important}
+html.lk-cl .wk i{background:var(--a)}
+/* buddy */
+html.lk-cl .bub p{border-radius:22px 22px 22px 8px!important;padding:14px 16px;font-size:16px}
+html.lk-cl .bub>i{background:var(--p)}
+/* up next: a card with a coloured caption */
+html.lk-cl .nextbar{border-radius:22px!important;padding:14px 16px;font-size:16px}
+html.lk-cl .nextbar b{color:var(--p)}
+html.lk-cl .nbf{border:0;background:var(--s2);color:var(--p)}
+html.lk-cl .nbf[aria-pressed=true]{background:var(--p);color:#fff}
+/* day list: every item is the same card, colour lives in the icon */
+html.lk-cl .ag{gap:10px 12px}
+html.lk-cl .ag .tm{color:var(--m);font-weight:600;font-variant-numeric:tabular-nums}
+html.lk-cl .blk{border-radius:20px!important;padding:14px 16px;font-size:17px;font-weight:600;color:var(--t)}
+html.lk-cl .blk small{font-size:15px;font-weight:400}
+html.lk-cl .blk .eico{background:var(--c)!important;color:#fff!important;border-radius:9px}
+html.lk-cl .blk.now,html.lk-cl .blk.ev.now{background:var(--s)!important;color:var(--t);box-shadow:inset 0 0 0 2px var(--p)!important}
+html.lk-cl .blk.now small{color:var(--p)!important;font-weight:600}
+html.lk-cl .blk.missed{box-shadow:inset 0 0 0 2px var(--a)!important}
+html.lk-cl .blk .chk{color:var(--c)}
+html.lk-cl .nowline,html.lk-cl .nowline::before{background:var(--red)}
+html.lk-cl .nowtm{color:var(--red)!important}
+/* buttons */
+html.lk-cl .btn{border-radius:22px}
+html.lk-cl .btn.a{background:var(--p);color:#fff}
+html.lk-cl .btn.o{border:0;background:color-mix(in srgb,var(--p) 18%,transparent);color:var(--p)}
+html.lk-cl .btn.g{background:var(--s2);color:var(--t)}
+html.lk-cl .btn.p{background:var(--p);color:#fff}
+/* Now card */
+html.lk-cl .cd.front{border-radius:26px!important}
+html.lk-cl .cd.b1,html.lk-cl .cd.b2{background:var(--s2)!important;opacity:.7;border-radius:26px!important}
+html.lk-cl .xp{border-radius:22px!important}
+/* floating tab bar */
+html.lk-cl .tabs{background:var(--bar)!important;-webkit-backdrop-filter:blur(24px) saturate(180%)!important;backdrop-filter:blur(24px) saturate(180%)!important;border:1px solid var(--ln)!important;box-shadow:0 8px 30px -12px #0009!important;border-radius:34px!important}
+html.lk-cl .tabs button{color:var(--t)}
+html.lk-cl .tabs button.on{background:color-mix(in srgb,var(--t) 9%,transparent)!important;color:var(--p);border-radius:28px!important}
+html.lk-cl .fab{background:var(--p);color:#fff;box-shadow:0 8px 24px -10px var(--p)!important}
+html.lk-cl .fabl{background:var(--s);color:var(--p);box-shadow:0 8px 24px -12px #0008!important}
+/* notes */
+html.lk-cl .nt{border-radius:20px!important;padding:14px 16px}
+html.lk-cl .srch{border-radius:14px!important;background:var(--s2)!important}
+
+/* GLASS on top of CLEAN: slow moving colour behind frosted cards */
+html.lk-cl .glow{background:#05060c!important}
+html.lk-cl .glow i{display:block!important;opacity:.5!important;filter:blur(70px);will-change:transform;animation:lkdrift 26s ease-in-out infinite alternate}
+html.lk-cl .glow i:nth-child(1){background:#1f46d6!important;width:75vmax;height:75vmax;left:-35vmax;top:-30vmax}
+html.lk-cl .glow i:nth-child(2){background:#7a2fd0!important;width:60vmax;height:60vmax;right:-30vmax;top:22vh;animation-duration:32s;animation-delay:-8s}
+html.lk-cl .glow i:nth-child(3){background:#e0553a!important;width:62vmax;height:62vmax;left:-15vmax;bottom:-38vmax;animation-duration:38s;animation-delay:-15s}
+@keyframes lkdrift{0%{transform:translate(0,0) scale(1)}33%{transform:translate(14vw,8vh) scale(1.12)}66%{transform:translate(-8vw,14vh) scale(.92)}100%{transform:translate(10vw,-6vh) scale(1.05)}}
+@media (prefers-color-scheme: light){html.lk-cl:root:not(.t-dark) .glow{background:#eef0f7!important}
+  html.lk-cl:root:not(.t-dark) .glow i{opacity:.55!important}
+  html.lk-cl:root:not(.t-dark) .glow i:nth-child(1){background:#6f9bff!important}
+  html.lk-cl:root:not(.t-dark) .glow i:nth-child(2){background:#d39bff!important}
+  html.lk-cl:root:not(.t-dark) .glow i:nth-child(3){background:#ffb08a!important}}
+@media(prefers-reduced-motion:reduce){html.lk-cl .glow i{animation:none}}
+/* frosted glass surfaces */
+html.lk-cl:root{--gl:rgba(24,24,28,.92);--gl2:rgba(30,30,36,.95);--glb:rgba(255,255,255,.1);--glt:rgba(24,24,28,.88)}
+@media (prefers-color-scheme: light){html.lk-cl:root:not(.t-dark){--gl:rgba(255,255,255,.9);--gl2:rgba(255,255,255,.95);--glb:rgba(60,60,90,.1);--glt:rgba(255,255,255,.85)}}
+html.lk-cl .card,html.lk-cl .wk button,html.lk-cl .bub p,html.lk-cl .em,html.lk-cl .pill,html.lk-cl .ib,html.lk-cl .lane,html.lk-cl .nt,html.lk-cl .cd.front,html.lk-cl .xp,html.lk-cl .got,html.lk-cl .srch,html.lk-cl .blk,html.lk-cl .cd.b1,html.lk-cl .cd.b2,html.lk-cl .nextbar{
+  background:var(--gl)!important;-webkit-backdrop-filter:blur(22px) saturate(170%)!important;backdrop-filter:blur(22px) saturate(170%)!important;
+  box-shadow:inset 0 0 0 .5px var(--glb),0 10px 30px -18px #0007!important}
+html.lk-cl .cd.front{background:var(--gl2)!important}
+html.lk-cl .cd.b1,html.lk-cl .cd.b2{opacity:.55}
+html.lk-cl .wk .sel{background:var(--p)!important;box-shadow:0 6px 18px -6px var(--p)!important}
+html.lk-cl .blk.now,html.lk-cl .blk.ev.now{background:var(--gl2)!important;box-shadow:inset 0 0 0 2px var(--p),0 10px 30px -14px var(--p)!important}
+html.lk-cl .blk.missed{box-shadow:inset 0 0 0 2px var(--a)!important}
+html.lk-cl .tabs{background:var(--glt)!important;border:0!important;box-shadow:inset 0 0 0 .5px var(--glb),0 10px 30px -12px #000a!important}
+html.lk-cl .fabl{background:var(--glt)!important;-webkit-backdrop-filter:blur(22px);backdrop-filter:blur(22px)}
+@media (prefers-color-scheme: light){html.lk-cl:root:not(.t-dark) .blk,html.lk-cl:root:not(.t-dark) .card,html.lk-cl:root:not(.t-dark) .nt,html.lk-cl:root:not(.t-dark) .bub p,html.lk-cl:root:not(.t-dark) .nextbar,html.lk-cl:root:not(.t-dark) .cd.front,html.lk-cl:root:not(.t-dark) .wk button:not(.sel){box-shadow:inset 0 0 0 .5px var(--glb),0 6px 20px -10px rgba(40,40,90,.28)!important}
+ html.lk-cl:root:not(.t-dark) .blk.now{box-shadow:inset 0 0 0 2px var(--p),0 8px 24px -12px var(--p)!important}html.lk-cl:root:not(.t-dark) .blk.missed{box-shadow:inset 0 0 0 2px var(--a),0 6px 20px -10px rgba(40,40,90,.28)!important}}
+
+/* explicit light setting */
+html.lk-cl.t-light{--g:#f2f2f7;--s:#fff;--s2:#e9e9ee;--t:#000;--m:#6c6c70;--p:#007aff;--on:#fff;--a:#ff9500;--ona:#fff;--ln:#0000000f;--sep:#c6c6c8;
+  --c1:#ff2d55;--c2:#34c759;--c3:#ff9500;--c4:#af52de;--v:#af52de;
+  --cb-blue:#007aff;--cb-orange:#ff9500;--cb-pink:#ff2d55;--cb-green:#34c759;--cb-purple:#af52de;--red:#ff3b30;--bar:rgba(255,255,255,.8)}
+html.lk-cl.t-light .glow{background:#eef0f7!important}
+  html.lk-cl.t-light .glow i{opacity:.55!important}
+  html.lk-cl.t-light .glow i:nth-child(1){background:#6f9bff!important}
+  html.lk-cl.t-light .glow i:nth-child(2){background:#d39bff!important}
+  html.lk-cl.t-light .glow i:nth-child(3){background:#ffb08a!important}
+html.lk-cl.t-light{--gl:rgba(255,255,255,.9);--gl2:rgba(255,255,255,.95);--glb:rgba(60,60,90,.1);--glt:rgba(255,255,255,.85)}
+html.lk-cl.t-light .blk,html.lk-cl.t-light .card,html.lk-cl.t-light .nt,html.lk-cl.t-light .bub p,html.lk-cl.t-light .nextbar,html.lk-cl.t-light .cd.front,html.lk-cl.t-light .wk button:not(.sel){box-shadow:inset 0 0 0 .5px var(--glb),0 6px 20px -10px rgba(40,40,90,.28)!important}
+ html.lk-cl.t-light .blk.now{box-shadow:inset 0 0 0 2px var(--p),0 8px 24px -12px var(--p)!important}html.lk-cl.t-light .blk.missed{box-shadow:inset 0 0 0 2px var(--a),0 6px 20px -10px rgba(40,40,90,.28)!important}
 </style>
 </head>
 <body>
@@ -1167,11 +1273,16 @@ button:active:not([disabled]),.btn:active,[role=button]:active{transform:scale(.
   loaders.inbox = function () { if (cache.inbox) renderInbox(cache.inbox); loadInbox(false); };
   $('i-refresh').onclick = function () { loadInbox(true); };
   function cut(t, n) { t = String(t || ''); return t.length > n ? t.slice(0, n - 1).trim() + '…' : t; }
+  var sugGone = {}; // email dates answered on this phone, hidden until the server has caught up
   function emItem(m, needs) {
-    var sug = (m.suggestions || [])[0];
+    var dts = (m.suggestions || []).filter(function (d) { return !sugGone[d.id]; }).map(function (d) {
+      return '<div class="ndt"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/></svg></span>' +
+        '<div><b>' + esc(d.title) + '</b><small>' + esc(whenLabel(d.start, d.allDay)) + ' · add to calendar?</small></div>' +
+        '<span class="q"><button class="btn a sm" data-sug="' + esc(d.id) + '">Add</button><button class="btn o sm" data-sugno="' + esc(d.id) + '">No</button></span></div>';
+    }).join('');
     return '<div class="em"><span class="av">' + esc(initials(m.name)) + '</span><div style="flex:1"><b>' + esc(m.name) + '</b><small>' + esc(m.subject) + '</small>' +
-      (needs && m.why ? '<span class="why">Why: ' + esc(m.why) + '</span>' : '') +
-      '<div class="q">' + (sug ? '<button class="btn a sm" data-sug="' + esc(sug.id) + '">Add to calendar</button>' : '') +
+      (needs && m.why ? '<span class="why">Why: ' + esc(m.why) + '</span>' : '') + dts +
+      '<div class="q">' +
       '<a class="btn o sm" href="' + esc(m.link) + '" target="_blank" rel="noopener">Open</a>' +
       '<button class="btn g sm" data-done="' + esc(m.threadId) + '">Done</button></div></div></div>';
   }
@@ -1202,7 +1313,17 @@ button:active:not([disabled]),.btn:active,[role=button]:active{transform:scale(.
       var item = b.closest('.em'); item.style.transition = 'opacity .25s'; item.style.opacity = '0';
       setTimeout(function () { item.remove(); }, 260); xpFly(5);
       call('apiEmailDone', b.dataset.done).then(function () { loadInbox(false); }).catch(fail); }; });
-    [].forEach.call($('i-body').querySelectorAll('[data-sug]'), function (b) { b.onclick = function () { addSuggestion(sugs[b.dataset.sug], b); }; });
+    // Add / No on an email date: the prompt goes away at once, and comes back only if saving fails.
+    function sugAnswer(b, id, yes) {
+      var s = sugs[id], row = b.closest('.ndt'); sugGone[id] = 1;
+      if (row) { row.style.transition = 'opacity .2s'; row.style.opacity = '0'; setTimeout(function () { row.remove(); }, 200); }
+      toast(yes ? 'Added to your calendar' : 'Okay, skipped');
+      var p = yes ? call('apiAcceptSuggestion', s.id, s.title, s.start, s.end, s.allDay) : call('apiDismissSuggestion', id);
+      p.then(function (r) { if (yes && r && r.points) xpFly(r.points); setTimeout(function () { delete sugGone[id]; }, 120000); if (yes) calPrefetch(new Date(s.start)); })
+       .catch(function (e) { delete sugGone[id]; fail(e); renderInbox(r); });
+    }
+    [].forEach.call($('i-body').querySelectorAll('[data-sug]'), function (b) { b.onclick = function () { sugAnswer(b, b.dataset.sug, true); }; });
+    [].forEach.call($('i-body').querySelectorAll('[data-sugno]'), function (b) { b.onclick = function () { sugAnswer(b, b.dataset.sugno, false); }; });
   }
 
   // ================= NOTES + PLANT =================
