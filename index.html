@@ -423,6 +423,9 @@ html.on-notes #nt-new,html.on-home #h-new{display:flex}
 html.standalone .fabl{position:absolute}
 /* dates found in a note */
 .xnote{margin:0 4px 12px;font-size:13px;color:var(--m);line-height:1.35}
+.mlang{display:flex;gap:6px;justify-content:center;margin:0 0 10px}
+.mlang button{border:0;border-radius:16px;padding:6px 14px;font:inherit;font-size:14px;font-weight:600;background:var(--s2);color:var(--m)}
+.mlang button[aria-pressed=true]{background:var(--p);color:#fff}
 .ndt{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:10px;padding:9px 10px;border-radius:14px;background:color-mix(in srgb,var(--s) 70%,transparent);border:1px solid var(--gb)}
 .ndt .ic{flex:none;width:30px;height:30px;border-radius:10px;display:grid;place-items:center;background:var(--a);color:var(--ona)}
 .ndt .ic svg{width:17px;height:17px}
@@ -707,6 +710,7 @@ html.lk-cl.t-light .blk,html.lk-cl.t-light .card,html.lk-cl.t-light .nt,html.lk-
 <!-- mic sheet -->
 <div class="sheet mic" id="s-mic" role="dialog" aria-label="Say it">
   <div class="grab"></div>
+  <div class="mlang" id="m-lang" role="group" aria-label="Voice language"><button data-l="hu-HU">Magyar</button><button data-l="en-US">English</button></div>
   <p class="l" id="m-state">Tap the button and say it</p>
   <p class="said" id="m-said"></p>
   <div class="wave" id="m-wave"></div>
@@ -1613,6 +1617,14 @@ html.lk-cl.t-light .blk,html.lk-cl.t-light .card,html.lk-cl.t-light .nt,html.lk-
     openSheet('s-mic'); checking = ''; $('m-result').innerHTML = ''; $('m-said').textContent = ''; $('m-text').value = '';
     if (SR) startListening(); else { $('m-state').textContent = 'Type it, or tap the microphone on your keyboard'; $('m-text').focus(); }
   };
+  function voiceLang() { return store('lang') || (/^hu/i.test(LOC) ? 'hu-HU' : 'en-US'); }
+  function showLang() { [].forEach.call($('m-lang').children, function (b) { b.setAttribute('aria-pressed', b.dataset.l === voiceLang()); }); }
+  showLang();
+  [].forEach.call($('m-lang').children, function (b) { b.onclick = function () {
+    store('lang', b.dataset.l); $('st-lang').value = b.dataset.l; showLang();
+    // switch straight away: stop the current listening and start again in the new language
+    if (rec) { stopListening(); setTimeout(function () { if (SR) startListening(); }, 300); }
+  }; });
   $('m-btn').onclick = function () { if (rec) stopListening(); else if (SR) startListening(); else { $('m-state').textContent = 'Voice isn\'t available here. Type it, or use your keyboard\'s microphone.'; $('m-text').focus(); } };
   // One recogniser for the whole visit: iPhone asks for the microphone each time a new one starts,
   // so reusing it means at most one question each time the app is opened.
@@ -1639,7 +1651,7 @@ html.lk-cl.t-light .blk,html.lk-cl.t-light .card,html.lk-cl.t-light .nt,html.lk-
   function startListening() {
     try {
       if (!recog) recog = makeRecog();
-      recog.lang = store('lang') || (/^hu/i.test(LOC) ? 'hu-HU' : 'en-US');
+      recog.lang = voiceLang();
       rec = recog; heard = '';
       recog.start();
       $('m-state').textContent = 'Listening…'; $('m-wave').classList.add('on'); $('m-btn').classList.add('on');
@@ -1701,7 +1713,7 @@ html.lk-cl.t-light .blk,html.lk-cl.t-light .card,html.lk-cl.t-light .nt,html.lk-
   $('st-name').value = store('name') || '';
   $('st-name').onchange = function () { store('name', $('st-name').value.trim()); hello(); };
   $('st-lang').value = store('lang') || (/^hu/i.test(LOC) ? 'hu-HU' : 'en-US');
-  $('st-lang').onchange = function () { store('lang', $('st-lang').value); };
+  $('st-lang').onchange = function () { store('lang', $('st-lang').value); showLang(); };
   $('st-close').onclick = closeSheet;
   $('st-mail').onclick = function () {
     var on = $('st-mail').getAttribute('aria-checked') !== 'true'; $('st-mail').setAttribute('aria-checked', on);
