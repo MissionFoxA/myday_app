@@ -1180,6 +1180,7 @@ button,.btn,.ib,.blk,.em,.nt,.lane h3,.wk button,.lev,.gev{transition:transform 
     }
   }
   function renderHome(h) {
+    if (h.blocks && typeof remDone !== 'undefined') h = Object.assign({}, h, { blocks: h.blocks.filter(function (b) { return b.type !== 'reminder' || !remDone[b.id]; }) });
     if (h.isToday && h.blocks) { var cut = Date.now() - 3 * 3600e3; h = Object.assign({}, h, { blocks: h.blocks.filter(function (b) { return !oldBlock(b, cut); }) }); }
     if (h.blocks && GONE_EV.length) h = Object.assign({}, h, { blocks: h.blocks.filter(function (b) { return b.type !== 'event' || !evGone(b); }) });
     if (h.isToday && h.woke !== undefined) showWoke(h.woke);
@@ -1279,8 +1280,10 @@ button,.btn,.ib,.blk,.em,.nt,.lane h3,.wk button,.lev,.gev{transition:transform 
     var blk = btn && (btn.closest('.blk') || btn);
     if (btn) btn.disabled = true;
     if (blk) { blk.style.pointerEvents = 'none'; if (blk.classList.contains('blk')) dust(blk); else { blk.style.transition = 'opacity .15s'; blk.style.opacity = '0'; } }
-    call('apiCompleteReminder', id).then(function (r) { if (!r || r.points !== 0) xpFly(10); toast('Done. A new leaf grew'); delete homeDays[dKey(new Date())]; homeShown = ''; if (after) after(); else loaders[current](); })
-      .catch(function (x) { delete remDone[id]; if (blk) { blk.style.pointerEvents = ''; blk.style.opacity = ''; } if (btn) btn.disabled = false; fail(x); });
+    xpFly(10); toast('Done. A new leaf grew');  // right away: saving happens in the background
+    call('apiCompleteReminder', id).then(function () { delete homeDays[dKey(new Date())]; homeShown = ''; if (after) after(); else loaders[current](); })
+      .catch(function (x) { delete remDone[id]; if (blk) { blk._gone = 0; blk.getAnimations && blk.getAnimations().forEach(function (a) { a.cancel(); }); blk.style.cssText = blk.style.cssText.replace(/display:\s*none;?|pointer-events:\s*none;?|overflow:\s*hidden;?|opacity:\s*0;?/g, '');
+        var t = blk.previousElementSibling; if (t && t.classList.contains('tm')) { t.style.display = ''; t.getAnimations && t.getAnimations().forEach(function (a) { a.cancel(); }); } } if (btn) btn.disabled = false; fail(x); });
   }
   function addSuggestion(s, btn) {
     if (btn) { btn.disabled = true; var q = btn.closest('.q'); if (q) q.innerHTML = '<span class="small">Adding…</span>'; }
@@ -1362,26 +1365,22 @@ button,.btn,.ib,.blk,.em,.nt,.lane h3,.wk button,.lev,.gev{transition:transform 
     }).catch(function (e) { busy = false; fail(e); loaders.now(); });
   }
   /** The card crumbles into dust that drifts away, left to right. */
+  // Finished card: a quick pop and fade, then the gap closes. Cheap enough to feel instant on a phone.
   function dust(el) {
-    var r = el.getBoundingClientRect(), cols = 9, rows = 11, tw = r.width / cols, th = r.height / rows;
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches || !el.animate) { el.style.opacity = '0'; return; }
-    var frag = document.createDocumentFragment(), bits = [];
-    for (var y = 0; y < rows; y++) for (var x = 0; x < cols; x++) {
-      var b = el.cloneNode(true); b.removeAttribute('id'); b.classList.add('dust');
-      b.style.cssText += ';inset:auto;left:' + r.left + 'px;top:' + r.top + 'px;width:' + r.width + 'px;height:' + r.height + 'px;transform:none;transition:none;' +
-        'clip-path:inset(' + (y * th) + 'px ' + (r.width - (x + 1) * tw - .5) + 'px ' + (r.height - (y + 1) * th - .5) + 'px ' + (x * tw) + 'px)';
-      frag.appendChild(b); bits.push([b, x, y]);
-    }
-    document.body.appendChild(frag);
-    el.style.transition = 'none'; el.style.opacity = '0';
-    bits.forEach(function (o) {
-      var dx = 30 + Math.random() * 90, dy = -(20 + Math.random() * 80), rot = (Math.random() - .5) * 60;
-      var delay = o[1] * 55 + Math.random() * 120 + (rows - o[2]) * 8;
-      o[0].animate([{ transform: 'translate(0,0) rotate(0)', opacity: 1 },
-                    { transform: 'translate(' + dx + 'px,' + dy + 'px) rotate(' + rot + 'deg) scale(.4)', opacity: 0 }],
-        { duration: 650 + Math.random() * 300, delay: delay, easing: 'cubic-bezier(.3,.1,.6,1)', fill: 'forwards' }).onfinish = function () { o[0].remove(); };
-    });
+    if (!el || el._gone) return; el._gone = 1;
+    var tm = el.previousElementSibling && el.previousElementSibling.classList.contains('tm') ? el.previousElementSibling : null;
+    el.style.pointerEvents = 'none';
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches || !el.animate) { el.style.display = 'none'; if (tm) tm.style.display = 'none'; return; }
+    var h = el.offsetHeight;
+    if (tm) tm.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 120, fill: 'forwards' });
+    el.animate([{ transform: 'scale(1)', opacity: 1 }, { transform: 'scale(.94)', opacity: 0 }], { duration: 140, easing: 'cubic-bezier(.4,0,1,1)', fill: 'forwards' }).onfinish = function () {
+      el.style.overflow = 'hidden';
+      el.animate([{ height: h + 'px', marginTop: '0px', marginBottom: '0px', paddingTop: getComputedStyle(el).paddingTop, paddingBottom: getComputedStyle(el).paddingBottom },
+                  { height: '0px', marginTop: '0px', marginBottom: '-10px', paddingTop: '0px', paddingBottom: '0px' }],
+        { duration: 180, easing: 'cubic-bezier(.45,0,.2,1)', fill: 'forwards' }).onfinish = function () { el.style.display = 'none'; if (tm) tm.style.display = 'none'; };
+    };
   }
+
   function swipe(el, cb) {
     var x0 = null, dx = 0, id = null;
     el.addEventListener('pointerdown', function (e) { if (e.target.closest('button,a')) return; x0 = e.clientX; dx = 0; id = e.pointerId; el.setPointerCapture(id); el.classList.add('drag'); });
