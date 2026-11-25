@@ -2590,6 +2590,9 @@ button,.btn,.ib,.blk,.em,.nt,.lane h3,.wk button,.lev,.gev{transition:transform 
       if (nb) {
         nb.classList.add('peek');
         nb.style.top = (cur.offsetTop + scrolled()) + 'px'; nb.style.left = cur.offsetLeft + 'px'; nb.style.width = cur.offsetWidth + 'px';
+        // line it up exactly with where it will sit after landing (a pulled-out page keeps its first margin inside)
+        var a = cur.firstElementChild, c = nb.firstElementChild;
+        if (a && c) { var d = a.getBoundingClientRect().top + scrolled() - c.getBoundingClientRect().top; if (d) nb.style.top = (parseFloat(nb.style.top) + d) + 'px'; }
         if (loaders[TABS[j]] && nb.querySelector('.skel')) { try { loaders[TABS[j]](); } catch (x) { /* shows its skeleton until opened */ } }
       }
     }
