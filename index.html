@@ -1210,10 +1210,13 @@ button:active:not([disabled]),.btn:active,[role=button]:active{transform:scale(.
   // Deleted notes stay hidden even if an older list arrives before the server has removed them
   // (that made a note come back, so it had to be deleted twice).
   var gone = {}, goneText = {}, rawNotes = [];
+  var goneDate = {}; // note dates answered on this phone: hidden at once, kept hidden until the server has caught up
+  function dateGone(n, d, on) { var k = n.id + '|' + d.start; if (on) goneDate[k] = 1; else delete goneDate[k]; }
   function setNotes(l) {
     rawNotes = l || [];
     rawNotes.forEach(function (n) { if (n.id !== 'new' && goneText[n.text] === 'send') { delete goneText[n.text]; gone[n.id] = 'sent'; call('apiDeleteNote', n.id).catch(fail); } });
     notes = rawNotes.filter(function (n) { return !gone[n.id] && !goneText[n.text]; });
+    notes.forEach(function (n) { if (n.dates) n.dates = n.dates.filter(function (d) { return !goneDate[n.id + '|' + d.start]; }); });
     remember('notes', notes);
   }
   var pendingDel = [];
@@ -1251,17 +1254,22 @@ button:active:not([disabled]),.btn:active,[role=button]:active{transform:scale(.
     function noteDate(b) { var k = b.split('|'), n = notes.filter(function (x) { return x.id === k[0]; })[0]; return n && n.dates ? [n, n.dates[+k[1]]] : null; }
     [].forEach.call($('nt-list').querySelectorAll('[data-nadd]'), function (b) { b.onclick = function () {
       var f = noteDate(b.dataset.nadd); if (!f || !f[1]) return; var n = f[0], d = f[1];
-      b.disabled = true; n.dates = n.dates.filter(function (x) { return x !== d; }); renderNotes();
+      b.disabled = true; dateGone(n, d, true); n.dates = n.dates.filter(function (x) { return x !== d; }); renderNotes();
+      toast('Added to your calendar: ' + cut(d.title, 30));
       call('apiNoteDateAdd', n.id, d.title, d.start, d.end, d.allDay).then(function (r) {
-        setNotes(r.notes); renderNotes(); xpFly(r.points); toast('Added to your calendar: ' + cut(d.title, 30));
+        setNotes(r.notes); renderNotes(); xpFly(r.points);
         homeDays = {}; try { CHUNKS = {}; store('calchunks', '{}'); } catch (e) {}
-      }).catch(function (e) { fail(e); loaders.notes(); });
+        setTimeout(function () { dateGone(n, d, false); }, 120e3);
+      }).catch(function (e) { dateGone(n, d, false); fail(e); loaders.notes(); });
     }; });
     [].forEach.call($('nt-list').querySelectorAll('[data-nno]'), function (b) { b.onclick = function () {
       var f = noteDate(b.dataset.nno); if (!f || !f[1]) return; var n = f[0], d = f[1], row = b.closest('.ndt');
       b.disabled = true; if (row) dust(row);
-      setTimeout(function () { n.dates = n.dates.filter(function (x) { return x !== d; }); renderNotes(); }, 450);
-      call('apiNoteDateNo', n.id, d.start).then(function (l) { setNotes(l); setTimeout(renderNotes, 500); }).catch(fail);
+      dateGone(n, d, true); n.dates = n.dates.filter(function (x) { return x !== d; });
+      if (row) row.style.visibility = 'hidden';
+      setTimeout(renderNotes, 60);
+      call('apiNoteDateNo', n.id, d.start).then(function (l) { setNotes(l); setTimeout(function () { dateGone(n, d, false); }, 120e3); })
+        .catch(function (e) { dateGone(n, d, false); fail(e); loaders.notes(); });
     }; });
     [].forEach.call($('nt-list').querySelectorAll('[data-del]'), function (b) { b.onclick = function () {
       var id = b.dataset.del, note = notes.filter(function (n) { return n.id === id; })[0];
