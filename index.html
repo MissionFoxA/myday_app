@@ -365,6 +365,11 @@ html.tod-day{--g1:var(--p);--g2:var(--a);--g3:var(--v)}
 html.tod-evening{--g1:#b8b0ff;--g2:#ff8fb1;--g3:#ffb38a}
 html.tod-night{--g1:#3a6fd1;--g2:#7b6cd9;--g3:#2f8f7f}
 .glow{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+/* Dusk background: one sky gradient, top to bottom */
+.glow{background:linear-gradient(180deg,#141a33 0%,#2a2350 38%,#5b3a5e 70%,#a2596a 100%)}
+.t-light .glow{background:linear-gradient(180deg,#fff3ea 0%,#ffe0d6 35%,#ffd0dc 65%,#e5d9ff 100%)}
+@media (prefers-color-scheme: light){:root:not(.t-dark) .glow{background:linear-gradient(180deg,#fff3ea 0%,#ffe0d6 35%,#ffd0dc 65%,#e5d9ff 100%)}}
+.glow i{display:none}
 .glow i{position:absolute;border-radius:50%;filter:blur(60px);opacity:.42;transition:background 2s}
 .t-light .glow i{opacity:.34}
 @media (prefers-color-scheme: light){:root:not(.t-dark) .glow i{opacity:.34}}
@@ -444,6 +449,26 @@ html.standalone .fabl{position:absolute}
 /* wake-up time */
 .pill.woke{display:inline-flex;align-items:center;gap:4px;color:var(--t)}.pill.woke[hidden]{display:none}.pill.woke svg{width:14px;height:14px;color:var(--a)}
 .nwoke{font-size:13px;color:var(--m)}.nwoke[hidden]{display:none}
+
+/* morning routine */
+.rthead{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px}.rthead h2{margin:0;font-size:18px}
+.rtpresets{display:flex;gap:6px;flex-wrap:wrap}
+.rtpresets button{min-height:36px;padding:0 14px;border-radius:12px;border:1.5px solid color-mix(in srgb,var(--t) 16%,transparent);font-size:14px;font-weight:500}
+.rtpresets button.on{background:var(--p);color:var(--on);border-color:transparent}
+.rtdays{display:flex;gap:5px}.rtdays button{flex:1;min-height:38px;border-radius:10px;border:1.5px solid color-mix(in srgb,var(--t) 16%,transparent);font-size:13px;font-weight:600;color:var(--m)}
+.rtdays button[aria-pressed=true]{background:var(--a);color:var(--ona);border-color:transparent}
+.rtstep{background:var(--s2);border-radius:14px;padding:10px;margin-bottom:8px;display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center}
+.rtstep input[type=text]{background:var(--s);padding:8px 10px}
+.rtstep .x{width:36px;height:36px;border-radius:10px;color:var(--m);display:grid;place-items:center}.rtstep .x svg{width:18px;height:18px}
+.rtstep .rw{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:14px;color:var(--m)}
+.rtstep select,.rtstep input[type=number]{width:auto;padding:6px 8px;font-size:15px;background:var(--s)}
+.rtstep input[type=number]{width:56px;border:0;border-radius:10px;color:var(--t);font:inherit;font-size:15px;text-align:center;-moz-appearance:textfield;appearance:textfield}.rtstep input[type=number]::-webkit-inner-spin-button,.rtstep input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
+.rtprev{margin-top:12px;font-size:14px;color:var(--m)}.rtprev b{color:var(--t);font-weight:600}
+.blk.routine .eico{background:color-mix(in srgb,var(--a) 85%,transparent);color:var(--ona)}
+.blk.routine.done{opacity:.55}.blk.routine.done>div{text-decoration:line-through}
+.blk.routine.done .chk svg{opacity:1}
+.blk.rwait .eico{background:var(--a);color:var(--ona)}
+.blk .q .btn{margin-top:2px}
 
 /* ================= SMALL UPGRADES ================= */
 /* press feel */
@@ -534,12 +559,26 @@ button:active:not([disabled]),.btn:active,[role=button]:active{transform:scale(.
 </div>
 
 <!-- settings sheet -->
+<div class="sheet" id="s-rt" role="dialog" aria-label="Morning routines">
+  <div class="grab"></div>
+  <div class="rthead"><button class="btn g sm" id="rt-cancel">Cancel</button><h2>Morning routines</h2><button class="btn a sm" id="rt-save">Save</button></div>
+  <div class="rtpresets" id="rt-presets"></div>
+  <label class="f" for="rt-name">Name</label><input type="text" id="rt-name" maxlength="40">
+  <label class="f">Use it on</label><div class="rtdays" id="rt-days"></div>
+  <label class="f">Steps</label><div id="rt-steps"></div>
+  <button class="btn g sm" id="rt-addstep" style="margin-top:8px">+ Add step</button>
+  <div id="rt-preview" class="rtprev"></div>
+  <button class="delbtn" id="rt-delpreset" style="margin-top:14px">Delete this routine</button>
+</div>
 <div class="sheet" id="s-set" role="dialog" aria-label="Settings">
   <div class="grab"></div>
   <h2>Settings</h2>
   <label class="f" for="st-name">Your name</label><input type="text" id="st-name" placeholder="For the greeting">
   <label class="f">Look</label><div class="seg" id="st-theme"><button data-t="auto">Auto</button><button data-t="dark">Dark</button><button data-t="light">Light</button></div>
   <label class="f" for="st-lang">Voice language</label><select id="st-lang"><option value="hu-HU">Magyar</option><option value="en-US">English</option></select>
+  <div class="set-sec"><h3>Morning routine</h3><p class="small">Steps that start from the time you get up, not from the clock.</p>
+    <label class="f" for="rt-today">Today</label><select id="rt-today"></select>
+    <div style="margin-top:10px"><button class="btn p sm" id="rt-edit">Edit routines</button></div></div>
   <div class="set-sec"><h3>Wake-up time</h3><p class="small" id="wk-now">Not set today.</p>
     <p class="small">Your iPhone can tell the app when you get up: make a Shortcuts automation for "When my wake-up alarm is stopped" that opens this link.</p>
     <div class="row" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px"><button class="btn a sm" id="wk-copy">Copy wake-up link</button><button class="btn g sm" id="wk-up">I'm up now</button></div>
@@ -787,12 +826,20 @@ button:active:not([disabled]),.btn:active,[role=button]:active{transform:scale(.
       return;
     }
     $('h-blocks').innerHTML = '<div class="ag">' + h.blocks.map(function (b, i) {
-      var tm = b.type === 'gift' ? 'Present' : b.type === 'suggestion' && !b.onDay ? 'Email' : b.allDay ? 'All day' : hm(b.start);
+      var tm = b.type === 'routinewait' ? 'Morning' : b.type === 'gift' ? 'Present' : b.type === 'suggestion' && !b.onDay ? 'Email' : b.allDay ? 'All day' : hm(b.start);
       var cls = 'blk' + (b.now ? ' now' : '') + (b.past ? ' past' : '') + (b.missed ? ' missed' : '');
-      var tint = b.type === 'gift' ? (b.tag === 'holiday' ? 'var(--c2)' : 'var(--c1)') : b.type === 'reminder' ? 'var(--c1)' : b.type === 'suggestion' ? 'var(--c3)' : 'var(--cb-' + (b.color || 'blue') + ')';
+      var tint = b.type === 'routine' || b.type === 'routinewait' ? 'var(--c3)' : b.type === 'gift' ? (b.tag === 'holiday' ? 'var(--c2)' : 'var(--c1)') : b.type === 'reminder' ? 'var(--c1)' : b.type === 'suggestion' ? 'var(--c3)' : 'var(--cb-' + (b.color || 'blue') + ')';
       if (b.type === 'event') cls += ' ev';
       var inner;
-      if (b.type === 'gift') {
+      if (b.type === 'routinewait') {
+        cls += ' rwait';
+        inner = '<span class="eico" aria-hidden="true">' + ICON_SUN + '</span><div>' + esc(b.title) + ' routine<small>' + b.steps + ' steps start when you get up</small>' +
+          '<div class="q"><button class="btn a sm" data-wakeup="1">I\'m up</button></div></div>';
+      } else if (b.type === 'routine') {
+        cls += ' routine' + (b.done ? ' done' : '');
+        inner = '<button class="chk" data-rt="' + esc(b.key) + '" aria-label="' + esc(b.title) + (b.done ? ' done' : ', mark done') + '"' + (b.done ? ' disabled' : '') + '>' + ICON_CHECK + '</button>' +
+          '<span class="eico" aria-hidden="true">' + ICON_SUN + '</span><div>' + esc(b.title) + '<small>' + esc(b.routine) + ' routine · ' + b.dur + ' min' + (b.done ? ' · done' : ' · +5 XP') + '</small></div>';
+      } else if (b.type === 'gift') {
         cls += ' gift' + (b.tag === 'holiday' ? ' hol' : '');
         inner = '<button class="chk" data-gift="' + esc(b.key) + '" aria-label="Present sorted for ' + esc(b.event) + '">' + ICON_CHECK + '</button>' +
           '<span class="eico" aria-hidden="true">' + tagIcon(b.tag) + '</span><div>' + esc(b.title) +
@@ -814,6 +861,11 @@ button:active:not([disabled]),.btn:active,[role=button]:active{transform:scale(.
     var byId = {}; h.blocks.forEach(function (b) { if (b.type === 'suggestion') byId[b.id] = b; });
     [].forEach.call($('h-blocks').querySelectorAll('[data-ev]'), function (x) { x.onclick = x.onkeydown = function (k) { if (k.type === 'keydown' && k.key !== 'Enter') return; openEditor(h.blocks[+x.dataset.ev]); }; });
     [].forEach.call($('h-blocks').querySelectorAll('[data-rem]'), function (x) { x.onclick = function () { doneReminder(x.dataset.rem, x); }; });
+    [].forEach.call($('h-blocks').querySelectorAll('[data-rt]'), function (x) { x.onclick = function () {
+      x.disabled = true; var bl = x.closest('.blk'); if (bl) bl.classList.add('done');
+      call('apiRoutineDone', x.dataset.rt).then(function (r) { xpFly(r.points); delete homeDays[dKey(new Date())]; homeShown = ''; loadHome(); }).catch(fail);
+    }; });
+    [].forEach.call($('h-blocks').querySelectorAll('[data-wakeup]'), function (x) { x.onclick = function () { imUp(x); }; });
     [].forEach.call($('h-blocks').querySelectorAll('[data-gift]'), function (x) { x.onclick = function () {
       x.disabled = true; var bl = x.closest('.blk'); if (bl) dust(bl);
       call('apiGiftDone', x.dataset.gift).then(function (r) { xpFly(r.points); toast('Present sorted. Nice!'); delete homeDays[dKey(new Date())]; homeShown = ''; loadHome(); }).catch(fail);
@@ -847,6 +899,7 @@ button:active:not([disabled]),.btn:active,[role=button]:active{transform:scale(.
     if (c.type === 'event') { tag = '<span class="tag">' + (new Date(c.start) <= new Date() ? 'Happening now' : 'Up next · ' + hm(c.start)) + '</span>'; if (c.location) lines.push(c.location); lines.push(hm(c.start) + '–' + hm(c.end)); }
     if (c.type === 'reminder') { tag = c.missed ? '<span class="tag miss">Missed · was ' + hm(c.start) + '</span>' : '<span class="tag">Reminder · ' + hm(c.start) + '</span>'; if (c.missed) lines.push('Finish it now and its leaf turns green again.'); }
     if (c.type === 'suggestion') { tag = '<span class="tag mail">Found in an email</span>'; lines.push(whenLabel(c.start, c.allDay)); if (c.from) lines.push('From ' + c.from); }
+    if (c.type === 'routine') { tag = c.missed ? '<span class="tag miss">Routine · was ' + hm(c.start) + '</span>' : '<span class="tag">' + esc(c.routine || 'Morning') + ' routine · ' + hm(c.start) + '</span>'; lines.push(c.dur + ' min'); }
     if (c.type === 'gift') { tag = '<span class="tag gift' + (c.tag === 'holiday' ? ' hol' : '') + '">' + tagIcon(c.tag) + (c.tag === 'holiday' ? 'Holiday' : 'Birthday') + ' ' + daysLeftLabel(c.daysLeft) + '</span>';
       lines.push(c.event + ' · ' + dayName(c.eventStart || c.start, { weekday: 'short', day: 'numeric', month: 'short' })); lines.push(c.daysLeft > 0 ? 'Not sorted yet? This comes back every day until it is.' : 'Last chance to sort a present.'); }
     if (c.type === 'email') { tag = '<span class="tag mail">Email needs you</span>'; lines.push('From ' + c.from); if (c.why) lines.push('Why: ' + c.why); }
@@ -1193,7 +1246,83 @@ button:active:not([disabled]),.btn:active,[role=button]:active{transform:scale(.
   };
   $('st-notif').hidden = !window.Notification || Notification.permission === 'granted';
   $('st-notif').onclick = function () { try { Notification.requestPermission().then(function (p) { $('st-notif').hidden = p === 'granted'; toast(p === 'granted' ? 'Notifications on' : 'Notifications not allowed'); }); } catch (e) { toast('This browser can\'t show notifications'); } };
+  function imUp(btn) {
+    if (btn) btn.disabled = true;
+    return call('apiSetWake', new Date().toISOString()).then(function (r) {
+      if (btn) btn.disabled = false; showWoke(r.woke); toast('Good morning! Your routine is planned.');
+      delete homeDays[dKey(new Date())]; homeShown = ''; if (current === 'home') loadHome(); scheduleAlerts();
+    }).catch(function (e) { if (btn) btn.disabled = false; fail(e); });
+  }
+  // ---- Morning routine editor ----
+  var RT = null; // { presets, sel }
+  var DAYN = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'], DAYORDER = [1, 2, 3, 4, 5, 6, 0];
+  function rtFill(st) {
+    $('rt-today').innerHTML = st.presets.map(function (p) { return '<option value="' + esc(p.id) + '">' + esc(p.name) + '</option>'; }).join('') + '<option value="none">No routine today</option>';
+    $('rt-today').value = st.active;
+  }
+  $('rt-today').onchange = function () { call('apiRoutineToday', $('rt-today').value).then(function (st) { rtFill(st); toast(st.active === 'none' ? 'No routine today' : st.activeName + ' routine today'); delete homeDays[dKey(new Date())]; homeShown = ''; scheduleAlerts(); }).catch(fail); };
+  function rtCur() { return RT.presets[RT.sel]; }
+  function rtReadSteps() {
+    var p = rtCur(); if (!p) return;
+    p.name = $('rt-name').value;
+    [].forEach.call($('rt-steps').querySelectorAll('.rtstep'), function (row, i) {
+      var st = p.steps[i]; if (!st) return;
+      st.title = row.querySelector('[data-f=title]').value; st.dur = +row.querySelector('[data-f=dur]').value || 1;
+      st.after = row.querySelector('[data-f=after]').value; st.gap = +row.querySelector('[data-f=gap]').value || 0;
+    });
+  }
+  function rtPreview() {
+    var p = rtCur(); if (!p || !p.steps.length) { $('rt-preview').textContent = ''; return; }
+    var base = wokeAt && sameDay(wokeAt, new Date()) ? new Date(wokeAt) : new Date(new Date().setHours(8, 0, 0, 0)), by = {}, t = {};
+    p.steps.forEach(function (s) { by[s.id] = s; });
+    function st(s, d) { if (t[s.id]) return t[s.id]; var b = base; if (s.after !== 'wake' && by[s.after] && d < 40) b = new Date(st(by[s.after], d + 1).getTime() + by[s.after].dur * 60e3); return (t[s.id] = new Date(b.getTime() + s.gap * 60e3)); }
+    var rows = p.steps.map(function (s) { return [st(s, 0), s]; }).sort(function (a, b) { return a[0] - b[0]; });
+    $('rt-preview').innerHTML = 'If you got up at <b>' + hm(base.toISOString()) + '</b>: ' + rows.map(function (r) { return esc(r[1].title) + ' <b>' + hm(r[0].toISOString()) + '</b>'; }).join(' · ');
+  }
+  function rtDraw() {
+    var p = rtCur();
+    $('rt-presets').innerHTML = RT.presets.map(function (x, i) { return '<button data-i="' + i + '" class="' + (i === RT.sel ? 'on' : '') + '">' + esc(x.name || 'Routine') + '</button>'; }).join('') + '<button data-new="1">+ New</button>';
+    [].forEach.call($('rt-presets').children, function (b) { b.onclick = function () {
+      rtReadSteps();
+      if (b.dataset.new) { RT.presets.push({ id: 'p' + Date.now().toString(36), name: 'New routine', days: [], steps: [{ id: 's1', title: 'Drink a glass of water', dur: 2, after: 'wake', gap: 0 }] }); RT.sel = RT.presets.length - 1; }
+      else RT.sel = +b.dataset.i;
+      rtDraw(); }; });
+    $('rt-delpreset').hidden = !p;
+    if (!p) { $('rt-name').value = ''; $('rt-days').innerHTML = ''; $('rt-steps').innerHTML = '<div class="empty" style="padding:10px">No routines. Tap + New.</div>'; $('rt-preview').textContent = ''; return; }
+    $('rt-name').value = p.name;
+    $('rt-days').innerHTML = DAYORDER.map(function (d) { return '<button data-d="' + d + '" aria-pressed="' + (p.days.indexOf(d) >= 0) + '">' + DAYN[d].slice(0, 2) + '</button>'; }).join('');
+    [].forEach.call($('rt-days').children, function (b) { b.onclick = function () { var d = +b.dataset.d, k = p.days.indexOf(d); if (k >= 0) p.days.splice(k, 1); else p.days.push(d); b.setAttribute('aria-pressed', k < 0); }; });
+    $('rt-steps').innerHTML = p.steps.map(function (st, i) {
+      var opts = '<option value="wake">after I get up</option>' + p.steps.filter(function (o) { return o.id !== st.id; }).map(function (o) { return '<option value="' + esc(o.id) + '"' + (o.id === st.after ? ' selected' : '') + '>after "' + esc(cut(o.title, 22)) + '" ends</option>'; }).join('');
+      return '<div class="rtstep"><input type="text" data-f="title" value="' + esc(st.title) + '" placeholder="What to do" aria-label="Step ' + (i + 1) + '">' +
+        '<button class="x" data-del="' + i + '" aria-label="Remove step"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6 6 18"/></svg></button>' +
+        '<div class="rw"><input type="number" data-f="dur" min="1" max="600" value="' + st.dur + '" aria-label="Minutes it takes"> min, starts <input type="number" data-f="gap" min="0" max="600" value="' + st.gap + '" aria-label="Minutes later"> min ' +
+        '<select data-f="after" aria-label="Starts after">' + opts.replace('value="wake"', 'value="wake"' + (st.after === 'wake' ? ' selected' : '')) + '</select></div></div>';
+    }).join('') || '<div class="empty" style="padding:10px">No steps yet.</div>';
+    [].forEach.call($('rt-steps').querySelectorAll('[data-del]'), function (b) { b.onclick = function () {
+      rtReadSteps(); var gone = p.steps.splice(+b.dataset.del, 1)[0];
+      p.steps.forEach(function (s) { if (s.after === gone.id) { s.after = gone.after; s.gap += gone.gap + gone.dur; } }); rtDraw(); }; });
+    [].forEach.call($('rt-steps').querySelectorAll('input,select'), function (el) { el.oninput = el.onchange = function () { rtReadSteps(); if (el.dataset.f === 'title') { /* keep focus while typing */ } rtPreview(); }; });
+    rtPreview();
+  }
+  $('rt-addstep').onclick = function () {
+    rtReadSteps(); var p = rtCur(); if (!p) return;
+    var last = p.steps[p.steps.length - 1], id = 's' + Date.now().toString(36);
+    p.steps.push({ id: id, title: '', dur: 5, after: last ? last.id : 'wake', gap: 0 }); rtDraw();
+    var ins = $('rt-steps').querySelectorAll('[data-f=title]'); if (ins.length) ins[ins.length - 1].focus();
+  };
+  $('rt-delpreset').onclick = function () { if (!rtCur()) return; RT.presets.splice(RT.sel, 1); RT.sel = 0; rtDraw(); };
+  $('rt-edit').onclick = function () {
+    call('apiRoutines').then(function (st) { RT = { presets: JSON.parse(JSON.stringify(st.presets)), sel: 0 }; var i = st.presets.map(function (p) { return p.id; }).indexOf(st.active); if (i >= 0) RT.sel = i; rtDraw(); openSheet('s-rt'); }).catch(fail);
+  };
+  $('rt-cancel').onclick = function () { openSheet('s-set'); loadSettings(); };
+  $('rt-save').onclick = function () {
+    rtReadSteps(); $('rt-save').disabled = true;
+    call('apiSaveRoutines', RT.presets).then(function (st) { $('rt-save').disabled = false; toast('Routines saved'); delete homeDays[dKey(new Date())]; homeShown = ''; scheduleAlerts(); openSheet('s-set'); loadSettings(); rtFill(st); })
+      .catch(function (e) { $('rt-save').disabled = false; fail(e); });
+  };
   function loadSettings() {
+    call('apiRoutines').then(rtFill).catch(function () {});
     showWoke();
     var conn = null; try { conn = JSON.parse(localStorage.getItem('myday_conn') || 'null'); } catch (e) {}
     $('wk-copy').hidden = !conn; $('wk-msg').textContent = conn ? '' : 'Open the phone app (home screen icon) to copy the link.';
@@ -1203,7 +1332,7 @@ button:active:not([disabled]),.btn:active,[role=button]:active{transform:scale(.
       if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(link).then(done, function () { prompt('Copy this link:', link); });
       else prompt('Copy this link:', link);
     };
-    $('wk-up').onclick = function () { $('wk-up').disabled = true; call('apiSetWake', new Date().toISOString()).then(function (r) { $('wk-up').disabled = false; showWoke(r.woke); toast('Good morning!'); }).catch(function (e) { $('wk-up').disabled = false; fail(e); }); };
+    $('wk-up').onclick = function () { imUp($('wk-up')); };
     call('apiEmailAlertsOn').then(function (on) { $('st-mail').setAttribute('aria-checked', !!on); }).catch(function () {});
     call('apiStatus').then(function (s) {
       $('st-engine').value = s.engine; $('st-model').value = s.model;
@@ -1734,7 +1863,7 @@ button:active:not([disabled]),.btn:active,[role=button]:active{transform:scale(.
   function showAlert(a) {
     if (shownAlerts[a.key]) return; shownAlerts[a.key] = true; alertNow = a;
     $('al-t').textContent = a.title;
-    $('al-s').textContent = a.kind === 'reminder' ? 'Reminder · now' : (a.allDay ? 'Today' : (new Date(a.start) <= new Date() ? 'Now' : 'At ' + hm(a.start))) + (a.location ? ' · ' + a.location : '');
+    $('al-s').textContent = a.kind === 'routine' ? 'Morning routine · now' : a.kind === 'reminder' ? 'Reminder · now' : (a.allDay ? 'Today' : (new Date(a.start) <= new Date() ? 'Now' : 'At ' + hm(a.start))) + (a.location ? ' · ' + a.location : '');
     $('alertb').classList.add('on');
     if (navigator.vibrate) try { navigator.vibrate([200, 100, 200]); } catch (e) {}
     try { if (window.Notification && Notification.permission === 'granted') new Notification(a.title, { body: $('al-s').textContent }); } catch (e) {}
