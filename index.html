@@ -450,6 +450,27 @@ html.standalone .fabl{position:absolute}
 .pill.woke{display:inline-flex;align-items:center;gap:4px;color:var(--t)}.pill.woke[hidden]{display:none}.pill.woke svg{width:14px;height:14px;color:var(--a)}
 .nwoke{font-size:13px;color:var(--m)}.nwoke[hidden]{display:none}
 
+/* next bar, now line, focus mode, swipe */
+#h-blocks{padding-bottom:84px}
+.nextbar{display:flex;align-items:center;gap:10px;margin:0 0 12px;padding:10px 12px 10px 14px;border-radius:14px;background:color-mix(in srgb,var(--p) 16%,var(--s));font-size:15px;color:var(--t)}
+.nextbar .nbt{flex:1;min-width:0}.nextbar b{font-weight:700}
+.nbf{display:flex;align-items:center;gap:5px;min-height:34px;padding:0 12px;border-radius:17px;font-size:14px;font-weight:600;border:1.5px solid color-mix(in srgb,var(--t) 18%,transparent);color:var(--t);flex:none}
+.nbf svg{width:16px;height:16px}.nbf[aria-pressed=true]{background:var(--p);color:var(--on);border-color:transparent}
+.nbshow{display:block;margin:-4px 0 10px auto;font-size:13px;color:var(--m);padding:4px 2px}
+.nowtm{color:var(--a)!important;font-weight:700!important;padding-top:0!important;font-size:12px!important;line-height:14px}
+.nowline{height:2px;margin-top:6px;background:var(--a);border-radius:2px;position:relative}
+.nowline::before{content:"";position:absolute;left:-5px;top:-4px;width:10px;height:10px;border-radius:50%;background:var(--a)}
+.ag .blk{transition:opacity .3s,filter .3s}
+.ag.focus .blk:not(.focusme),.ag.focus .tm{opacity:.18;filter:saturate(.3)}
+.ag.focus .nowline,.ag.focus .nowtm{opacity:.5}
+.ag.focus.peek .blk,.ag.focus.peek .tm{opacity:1;filter:none}
+.ag.focus .blk.focusme{transform:scale(1.02);box-shadow:0 10px 26px -10px color-mix(in srgb,var(--p) 70%,transparent),inset 0 0 0 2px var(--p)}
+.blk.snz{opacity:.5}.blk .snzl{color:var(--a)!important;font-weight:600}
+.blk.ev.done{opacity:.5}.blk.ev.done>div{text-decoration:line-through}
+.ag{position:relative}
+.swu{position:absolute;border-radius:14px;display:flex;align-items:center;padding:0 18px;font-weight:700;font-size:15px;background:var(--s2);color:var(--m);transition:background .15s,color .15s;z-index:0}
+.swu.r{justify-content:flex-start}.swu.l{justify-content:flex-end}
+.swu.r.go{background:var(--leaf,#6fd39a);color:#10361f}.swu.l.go{background:var(--a);color:var(--ona)}
 /* Apple Calendar */
 .xcrow{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--s2);border-radius:14px;margin:8px 0}
 .xcrow .dot{width:12px;height:12px;border-radius:50%;background:var(--col);flex:none}
@@ -824,6 +845,108 @@ button:active:not([disabled]),.btn:active,[role=button]:active{transform:scale(.
   }
   loaders.home = function () { loadHome(); };
   var homeDayShown = null;
+  // ---- Next thing, now marker, focus mode, swipe ----
+  var FOCUS = false; try { FOCUS = localStorage.getItem('myday_focus') === '1'; } catch (e) {}
+  var homeLive = null, swiping = false;
+  function isOpen(b, now) {
+    if (b.done || (b.snoozed && new Date(b.snoozed) > now)) return false;
+    if (b.type === 'suggestion' || b.type === 'routinewait' || b.allDay) return false;
+    if (b.type === 'event') return new Date(b.end) > now;
+    return true; // reminders, routine steps (also missed ones) stay open until done
+  }
+  /** The one thing to do now: something happening now, then anything overdue, then the next upcoming. */
+  function nextIdx(blocks, now) {
+    var on = -1, over = -1, up = -1;
+    blocks.forEach(function (b, i) {
+      if (!isOpen(b, now)) return;
+      var st = new Date(b.start), en = new Date(b.end || b.start);
+      if (b.type === 'event' && st <= now && en > now) { if (on < 0) on = i; }
+      else if (st <= now) { if (over < 0) over = i; }
+      else if (up < 0) up = i;
+    });
+    return on >= 0 ? on : over >= 0 ? over : up;
+  }
+  function durLabel(ms) {
+    var m = Math.max(1, Math.round(ms / 60000)); if (m < 60) return m + ' min';
+    var hh = Math.floor(m / 60), mm = m % 60; return hh + ' h' + (mm ? ' ' + mm + ' min' : '');
+  }
+  function nextBarHtml(blocks, nx, now) {
+    var txt;
+    if (nx < 0) txt = blocks.some(function (b) { return b.type !== 'suggestion'; }) ? 'All clear for now. Nice work.' : '';
+    else {
+      var b = blocks[nx], st = new Date(b.start), en = new Date(b.end || b.start);
+      if (b.type === 'event' && st <= now) txt = '<b>' + esc(b.title) + '</b> · ' + durLabel(en - now) + ' left';
+      else if (st <= now) txt = 'Next: <b>' + esc(b.title) + '</b> · whenever you\'re ready';
+      else txt = 'Next: <b>' + esc(b.title) + '</b> in ' + durLabel(st - now);
+    }
+    if (!txt) return '';
+    return '<div class="nextbar" aria-live="polite"><span class="nbt">' + txt + '</span>' +
+      (nx >= 0 ? '<button class="nbf" id="nb-focus" aria-pressed="' + (FOCUS ? 'true' : 'false') + '"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/></svg>Focus</button>' : '') + '</div>' +
+      (FOCUS && nx >= 0 ? '<button class="nbshow" id="nb-show">Show everything for a moment</button>' : '');
+  }
+  function nowMarkHtml(now) { return '<span class="tm nowtm">' + hm(now.toISOString()) + '</span><div class="nowline" aria-hidden="true"></div>'; }
+  // keep the countdown and the now line moving while Home is open
+  setInterval(function () { if (homeLive && current === 'home' && !CAL.open && !openId && !swiping && document.visibilityState === 'visible') { homeDayShown = homeLive.day; renderHome(homeLive); } }, 30000);
+
+  function swKind(b) {
+    if (b.type === 'suggestion') return 'sug';
+    if (b.type === 'reminder' || b.type === 'gift') return 'x';
+    if (b.type === 'routine') return b.done ? '' : 'x';
+    if (b.type === 'event') return b.done ? '' : 'x';
+    return '';
+  }
+  function swKey(b) { return b.type === 'reminder' ? 'rem:' + b.id : b.key; }
+  function swipeBlock(el, b) {
+    var x0 = 0, y0 = 0, dx = 0, mode = null, pid = null, under = null, kind = swKind(b);
+    el.style.touchAction = 'pan-y';
+    function labels() { return kind === 'sug' ? ['Add', 'No'] : [b.type === 'gift' ? 'Bought' : 'Done', 'Snooze 15 min']; }
+    el.addEventListener('pointerdown', function (e) {
+      if (e.button || e.target.closest('button,a,input')) return;
+      x0 = e.clientX; y0 = e.clientY; dx = 0; mode = null; pid = e.pointerId;
+    });
+    el.addEventListener('pointermove', function (e) {
+      if (pid !== e.pointerId) return;
+      var mx = e.clientX - x0, my = e.clientY - y0;
+      if (!mode) { if (Math.abs(mx) > 10 && Math.abs(mx) > Math.abs(my) * 1.3) { mode = 'x'; swiping = true; try { el.setPointerCapture(pid); } catch (er) {} start(); } else if (Math.abs(my) > 10) { pid = null; return; } else return; }
+      dx = mx; el.style.transform = 'translateX(' + dx + 'px)';
+      var L = labels(), r = dx > 0, past = Math.abs(dx) > 80;
+      under.className = 'swu ' + (r ? 'r' : 'l') + (past ? ' go' : '');
+      under.querySelector('b').textContent = r ? L[0] : L[1];
+    });
+    function start() {
+      var r = el.getBoundingClientRect(), pr = el.offsetParent ? el.offsetParent.getBoundingClientRect() : { left: 0, top: 0 };
+      under = document.createElement('div'); under.className = 'swu'; under.innerHTML = '<b></b>';
+      under.style.cssText = 'left:' + el.offsetLeft + 'px;top:' + el.offsetTop + 'px;width:' + el.offsetWidth + 'px;height:' + el.offsetHeight + 'px';
+      el.parentNode.insertBefore(under, el); el.style.transition = 'none'; el.style.position = 'relative'; el.style.zIndex = '1';
+    }
+    function end(e) {
+      if (pid !== e.pointerId) return; pid = null;
+      if (mode !== 'x') return;
+      swiping = false; el._noClick = Date.now();
+      var go = Math.abs(dx) > 80, right = dx > 0;
+      el.style.transition = 'transform .22s cubic-bezier(.2,.8,.3,1), opacity .22s';
+      if (!go) { el.style.transform = ''; setTimeout(cleanup, 230); return; }
+      el.style.transform = 'translateX(' + (right ? 1 : -1) * (el.offsetWidth + 40) + 'px)'; el.style.opacity = '0';
+      setTimeout(function () { act(right); }, 200);
+    }
+    el.addEventListener('pointerup', end); el.addEventListener('pointercancel', function (e) { if (pid === e.pointerId) { dx = 0; end(e); } });
+    function cleanup() { if (under) under.remove(); under = null; el.style.transition = ''; el.style.zIndex = ''; }
+    function refresh() { delete homeDays[dKey(new Date())]; homeShown = ''; loadHome(); }
+    function act(right) {
+      if (kind === 'sug') { if (right) addSuggestion(b, null); else call('apiDismissSuggestion', b.id).then(function () { toast('Okay, skipped'); refresh(); }).catch(fail); return; }
+      if (!right) {
+        call('apiSnooze', swKey(b), 15, b.title).then(function (r) {
+          toast('Snoozed until ' + hm(r.until), { action: 'Undo', onAction: function () { call('apiUnsnooze', swKey(b)).then(refresh).catch(fail); } }); refresh(); scheduleAlerts();
+        }).catch(function (x) { fail(x); refresh(); });
+        return;
+      }
+      var p = b.type === 'reminder' ? call('apiCompleteReminder', b.id).then(function () { return { points: 10 }; })
+        : b.type === 'routine' ? call('apiRoutineDone', b.key)
+        : b.type === 'gift' ? call('apiGiftDone', b.key)
+        : call('apiEventDone', b.key);
+      p.then(function (r) { xpFly(r && r.points); toast(b.type === 'gift' ? 'Present sorted. Nice!' : 'Done. Nice one!'); refresh(); }).catch(function (x) { fail(x); refresh(); });
+    }
+  }
   function renderHome(h) {
     if (h.blocks && GONE_EV.length) h = Object.assign({}, h, { blocks: h.blocks.filter(function (b) { return b.type !== 'event' || !evGone(b); }) });
     if (h.isToday && h.woke !== undefined) showWoke(h.woke);
@@ -843,11 +966,18 @@ button:active:not([disabled]),.btn:active,[role=button]:active{transform:scale(.
       $('h-blocks').innerHTML = '<div class="empty">' + (h.isToday ? 'Nothing planned today. Tap the orange button to add something.' : 'Nothing planned on ' + esc(dayName(h.day, { weekday: 'long' })) + '.') + '</div>';
       return;
     }
-    $('h-blocks').innerHTML = '<div class="ag">' + h.blocks.map(function (b, i) {
+    var nowD = new Date(), nx = h.isToday ? nextIdx(h.blocks, nowD) : -1, markerAt = -1;
+    if (h.isToday) for (var mi = 0; mi < h.blocks.length; mi++) { var mb = h.blocks[mi]; if (mb.allDay || (mb.type === 'suggestion' && !mb.onDay) || mb.type === 'routinewait') continue; if (new Date(mb.start) > nowD) { markerAt = mi; break; } }
+    if (h.isToday && markerAt < 0 && h.blocks.some(function (b) { return !b.allDay && b.type !== 'suggestion' && b.type !== 'routinewait'; })) markerAt = h.blocks.length;
+    var focusOn = h.isToday && FOCUS && nx >= 0;
+    $('h-blocks').innerHTML = (h.isToday ? nextBarHtml(h.blocks, nx, nowD) : '') + '<div class="ag' + (focusOn ? ' focus' : '') + '">' + h.blocks.map(function (b, i) {
       var tm = b.type === 'routinewait' ? 'Morning' : b.type === 'gift' ? 'Present' : b.type === 'suggestion' && !b.onDay ? 'Email' : b.allDay ? 'All day' : hm(b.start);
       var cls = 'blk' + (b.now ? ' now' : '') + (b.past ? ' past' : '') + (b.missed ? ' missed' : '');
       var tint = b.type === 'routine' || b.type === 'routinewait' ? 'var(--c3)' : b.type === 'gift' ? (b.tag === 'holiday' ? 'var(--c2)' : 'var(--c1)') : b.type === 'reminder' ? 'var(--c1)' : b.type === 'suggestion' ? 'var(--c3)' : 'var(--cb-' + (b.color || 'blue') + ')';
-      if (b.type === 'event') cls += ' ev';
+      if (b.type === 'event') cls += ' ev' + (b.done ? ' done' : '');
+      if (b.snoozed) cls += ' snz';
+      if (i === nx) cls += ' focusme';
+      var sw = h.isToday && swKind(b) ? ' data-sw="' + i + '"' : '';
       var inner;
       if (b.type === 'routinewait') {
         cls += ' rwait';
@@ -872,12 +1002,18 @@ button:active:not([disabled]),.btn:active,[role=button]:active{transform:scale(.
         var extra = b.location ? esc(b.location) : (!b.allDay ? hm(b.start) + '–' + hm(b.end) : '');
         inner = (b.tag ? '<span class="eico" aria-hidden="true">' + tagIcon(b.tag) + '</span>' : eIcon(b.title, 'event')) + '<div>' + esc(b.title) + (extra ? '<small>' + extra + '</small>' : '') + '</div>';
       }
-      return '<span class="tm">' + esc(tm) + '</span><div class="' + cls + '"' + (b.type === 'event' ? ' data-ev="' + i + '" role="button" tabindex="0"' : '') + ' style="--c:' + tint + '">' + inner + '</div>';
-    }).join('') + '</div>';
+      if (b.snoozed) inner = inner.replace(/<\/div>$/, '<small class="snzl">Snoozed until ' + hm(b.snoozed) + '</small></div>');
+      return (i === markerAt ? nowMarkHtml(nowD) : '') + '<span class="tm">' + esc(tm) + '</span><div class="' + cls + '"' + (b.type === 'event' ? ' data-ev="' + i + '" role="button" tabindex="0"' : '') + sw + ' style="--c:' + tint + '">' + inner + '</div>';
+    }).join('') + (markerAt === h.blocks.length ? nowMarkHtml(nowD) : '') + '</div>';
     if (hdir && $('h-blocks').animate && !window.matchMedia('(prefers-reduced-motion: reduce)').matches)
       $('h-blocks').animate([{ transform: 'translateX(' + hdir * 60 + 'px)', opacity: 0 }, { transform: 'none', opacity: 1 }], { duration: 280, easing: 'cubic-bezier(.2,.8,.3,1)' });
     var byId = {}; h.blocks.forEach(function (b) { if (b.type === 'suggestion') byId[b.id] = b; });
-    [].forEach.call($('h-blocks').querySelectorAll('[data-ev]'), function (x) { x.onclick = x.onkeydown = function (k) { if (k.type === 'keydown' && k.key !== 'Enter') return; openEditor(h.blocks[+x.dataset.ev]); }; });
+    [].forEach.call($('h-blocks').querySelectorAll('[data-ev]'), function (x) { x.onclick = x.onkeydown = function (k) { if (k.type === 'keydown' && k.key !== 'Enter') return; if (Date.now() - (x._noClick || 0) < 500) return; openEditor(h.blocks[+x.dataset.ev]); }; });
+    [].forEach.call($('h-blocks').querySelectorAll('[data-sw]'), function (x) { swipeBlock(x, h.blocks[+x.dataset.sw]); });
+    if ($('nb-focus')) $('nb-focus').onclick = function () { FOCUS = !FOCUS; try { localStorage.setItem('myday_focus', FOCUS ? '1' : ''); } catch (e) {} homeShown = ''; renderHome(h); toast(FOCUS ? 'Focus on: just the next thing' : 'Focus off: showing everything'); var fm = FOCUS && $('h-blocks').querySelector('.focusme'); if (fm && fm.scrollIntoView) fm.scrollIntoView({ block: 'center', behavior: 'smooth' }); };
+    if ($('nb-show')) $('nb-show').onclick = function () { var a = $('h-blocks').querySelector('.ag'); if (a) a.classList.toggle('peek'); };
+    homeLive = h.isToday ? h : null;
+    if (h.isToday && !localStorage.getItem('myday_swtip') && $('h-blocks').querySelector('[data-sw]')) { try { localStorage.setItem('myday_swtip', '1'); } catch (e) {} setTimeout(function () { toast('Tip: swipe a card right to finish it, left to snooze 15 min', { ms: 5000 }); }, 1500); }
     [].forEach.call($('h-blocks').querySelectorAll('[data-rem]'), function (x) { x.onclick = function () { doneReminder(x.dataset.rem, x); }; });
     [].forEach.call($('h-blocks').querySelectorAll('[data-rt]'), function (x) { x.onclick = function () {
       x.disabled = true; var bl = x.closest('.blk'); if (bl) bl.classList.add('done');
@@ -1936,7 +2072,7 @@ button:active:not([disabled]),.btn:active,[role=button]:active{transform:scale(.
   function showAlert(a) {
     if (shownAlerts[a.key]) return; shownAlerts[a.key] = true; alertNow = a;
     $('al-t').textContent = a.title;
-    $('al-s').textContent = a.kind === 'routine' ? 'Morning routine · now' : a.kind === 'reminder' ? 'Reminder · now' : (a.allDay ? 'Today' : (new Date(a.start) <= new Date() ? 'Now' : 'At ' + hm(a.start))) + (a.location ? ' · ' + a.location : '');
+    $('al-s').textContent = a.kind === 'snooze' ? 'Snoozed · back now' : a.kind === 'routine' ? 'Morning routine · now' : a.kind === 'reminder' ? 'Reminder · now' : (a.allDay ? 'Today' : (new Date(a.start) <= new Date() ? 'Now' : 'At ' + hm(a.start))) + (a.location ? ' · ' + a.location : '');
     $('alertb').classList.add('on');
     if (navigator.vibrate) try { navigator.vibrate([200, 100, 200]); } catch (e) {}
     try { if (window.Notification && Notification.permission === 'granted') new Notification(a.title, { body: $('al-s').textContent }); } catch (e) {}
@@ -1998,7 +2134,7 @@ button:active:not([disabled]),.btn:active,[role=button]:active{transform:scale(.
     app.addEventListener('touchstart', function (e) {
       if (e.touches.length !== 1) { x0 = null; return; }
       var t = e.target;
-      skip = !!(openId || CAL.open || t.closest('.stack,.wk,input,textarea,select,.chips,.newnote'));
+      skip = !!(openId || CAL.open || t.closest('.stack,.wk,input,textarea,select,.chips,.newnote,[data-sw]'));
       x0 = e.touches[0].clientX; y0 = e.touches[0].clientY; t0 = Date.now();
     }, { passive: true });
     app.addEventListener('touchend', function (e) {
