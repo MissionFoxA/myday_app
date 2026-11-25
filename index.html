@@ -406,6 +406,21 @@ html.tod-night{--g1:#3a6fd1;--g2:#7b6cd9;--g3:#2f8f7f}
 .xp .lb #n-lvl{font-size:18px;font-weight:600;color:var(--t)}
 .stack{margin-top:30px}
 
+/* Notes: new-note button bottom left (only on the Notes screen) */
+.fabl{position:fixed;z-index:21;bottom:calc(84px + env(safe-area-inset-bottom));left:max(18px,calc(50% - 222px));height:58px;padding:0 20px 0 16px;border-radius:29px;
+  display:none;align-items:center;gap:6px;font-weight:600;font-size:16px;background:var(--p);color:var(--on);box-shadow:0 10px 24px -6px var(--p)}
+.fabl svg{width:22px;height:22px}
+html.on-notes .fabl{display:flex}
+html.standalone .fabl{position:absolute}
+/* dates found in a note */
+.ndt{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:10px;padding:9px 10px;border-radius:14px;background:color-mix(in srgb,var(--s) 70%,transparent);border:1px solid var(--gb)}
+.ndt .ic{flex:none;width:30px;height:30px;border-radius:10px;display:grid;place-items:center;background:var(--a);color:var(--ona)}
+.ndt .ic svg{width:17px;height:17px}
+.ndt>div{flex:1;min-width:140px}
+.ndt b{display:block;font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ndt small{margin:0;font-size:13px}
+.ndt .q{display:flex;gap:6px}
+
 /* ================= SMALL UPGRADES ================= */
 /* press feel */
 button,.btn,[role=button]{transition:transform .14s cubic-bezier(.3,.7,.4,1.4),background .2s,color .2s}
@@ -462,7 +477,7 @@ button:active:not([disabled]),.btn:active,[role=button]:active{transform:scale(.
 
   <!-- ================= NOTES ================= -->
   <section class="view" id="v-notes" aria-label="Notes">
-    <div class="top"><h1>Notes</h1><button class="pill" id="nt-new">+ New</button></div>
+    <div class="top"><h1>Notes</h1></div>
     <div class="card newnote" id="nt-form"><textarea id="nt-text" placeholder="Write a note. The first line is the title."></textarea>
       <div class="row"><button class="btn g sm" id="nt-cancel">Cancel</button><button class="btn a sm" id="nt-save">Save note</button></div></div>
     <div class="card srch"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg><input type="text" id="nt-q" placeholder="Search notes" aria-label="Search notes"></div>
@@ -473,6 +488,7 @@ button:active:not([disabled]),.btn:active,[role=button]:active{transform:scale(.
 
 <!-- tab bar + mic -->
 <button class="fab" id="fab" aria-label="Say a reminder or note"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="9" y="3" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></button>
+<button class="fabl" id="nt-new" aria-label="New note"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>Note</button>
 <nav class="tabs"><div class="in">
   <button data-v="home" class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16"/></svg>Home</button>
   <button data-v="now"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="4" width="14" height="16" rx="3"/></svg>Now</button>
@@ -660,7 +676,7 @@ button:active:not([disabled]),.btn:active,[role=button]:active{transform:scale(.
   function show(v) {
     var from = TABS.indexOf(current), to = TABS.indexOf(v), sv = document.getElementById('v-' + v);
     if (sv) { sv.style.setProperty('--vx', from < 0 || to < 0 || from === to ? '0px' : (to > from ? '28px' : '-28px')); sv.style.setProperty('--vy', from === to ? '6px' : '0px'); }
-    current = v;
+    current = v; document.documentElement.classList.toggle('on-notes', v === 'notes');
     [].forEach.call(document.querySelectorAll('.view'), function (s) { s.classList.toggle('on', s.id === 'v-' + v); });
     [].forEach.call(document.querySelectorAll('.tabs button'), function (b) { b.classList.toggle('on', b.dataset.v === v); });
     window.scrollTo(0, 0); var ap = document.querySelector('.app'); if (ap) ap.scrollTop = 0;
@@ -916,9 +932,29 @@ button:active:not([disabled]),.btn:active,[role=button]:active{transform:scale(.
     var list = notes.filter(function (n) { return !q || n.text.toLowerCase().indexOf(q) >= 0; });
     var tints = ['var(--c3)', 'var(--c2)', 'var(--c1)'];
     $('nt-list').innerHTML = list.map(function (n, i) {
-      return '<div class="nt" style="--c:' + tints[i % 3] + '"><div><p>' + esc(n.text) + '</p><small>' + esc(whenLabel(n.created)) + '</small></div>' +
+      var dts = (n.dates || []).map(function (d, j) {
+        return '<div class="ndt"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/></svg></span>' +
+          '<div><b>' + esc(d.title) + '</b><small>' + esc(whenLabel(d.start, d.allDay)) + ' · add to calendar?</small></div>' +
+          '<span class="q"><button class="btn a sm" data-nadd="' + esc(n.id) + '|' + j + '">Add</button><button class="btn o sm" data-nno="' + esc(n.id) + '|' + j + '">No</button></span></div>';
+      }).join('');
+      return '<div class="nt" style="--c:' + tints[i % 3] + '"><div><p>' + esc(n.text) + '</p><small>' + esc(whenLabel(n.created)) + '</small>' + dts + '</div>' +
         '<button class="x" data-del="' + esc(n.id) + '" aria-label="Delete note"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>';
-    }).join('') || '<div class="empty">' + (q ? 'No notes match "' + esc(q) + '".' : 'No notes yet. Tap + New, or say "note:" into the orange button.') + '</div>';
+    }).join('') || '<div class="empty">' + (q ? 'No notes match "' + esc(q) + '".' : 'No notes yet. Tap + Note, or say "note:" into the orange button.') + '</div>';
+    function noteDate(b) { var k = b.split('|'), n = notes.filter(function (x) { return x.id === k[0]; })[0]; return n && n.dates ? [n, n.dates[+k[1]]] : null; }
+    [].forEach.call($('nt-list').querySelectorAll('[data-nadd]'), function (b) { b.onclick = function () {
+      var f = noteDate(b.dataset.nadd); if (!f || !f[1]) return; var n = f[0], d = f[1];
+      b.disabled = true; n.dates = n.dates.filter(function (x) { return x !== d; }); renderNotes();
+      call('apiNoteDateAdd', n.id, d.title, d.start, d.end, d.allDay).then(function (r) {
+        notes = r.notes; remember('notes', notes); renderNotes(); xpFly(r.points); toast('Added to your calendar: ' + cut(d.title, 30));
+        homeDays = {}; try { CHUNKS = {}; store('calchunks', '{}'); } catch (e) {}
+      }).catch(function (e) { fail(e); loaders.notes(); });
+    }; });
+    [].forEach.call($('nt-list').querySelectorAll('[data-nno]'), function (b) { b.onclick = function () {
+      var f = noteDate(b.dataset.nno); if (!f || !f[1]) return; var n = f[0], d = f[1], row = b.closest('.ndt');
+      b.disabled = true; if (row) dust(row);
+      setTimeout(function () { n.dates = n.dates.filter(function (x) { return x !== d; }); renderNotes(); }, 450);
+      call('apiNoteDateNo', n.id, d.start).then(function (l) { notes = l; remember('notes', l); setTimeout(renderNotes, 500); }).catch(fail);
+    }; });
     [].forEach.call($('nt-list').querySelectorAll('[data-del]'), function (b) { b.onclick = function () {
       var id = b.dataset.del, note = notes.filter(function (n) { return n.id === id; })[0];
       notes = notes.filter(function (n) { return n.id !== id; }); renderNotes();
@@ -928,7 +964,7 @@ button:active:not([disabled]),.btn:active,[role=button]:active{transform:scale(.
     }; });
   }
   $('nt-q').oninput = renderNotes;
-  $('nt-new').onclick = function () { $('nt-form').classList.add('on'); $('nt-text').focus(); };
+  $('nt-new').onclick = function () { $('nt-form').classList.add('on'); var ap = document.querySelector('.app'); if (ap) ap.scrollTop = 0; window.scrollTo(0, 0); $('nt-text').focus(); };
   $('nt-cancel').onclick = function () { $('nt-form').classList.remove('on'); $('nt-text').value = ''; };
   $('nt-save').onclick = function () {
     var t = $('nt-text').value.trim(); if (!t) return;
