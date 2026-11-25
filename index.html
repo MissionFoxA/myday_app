@@ -638,11 +638,8 @@ html.lk-cl.t-light{--gl:rgba(255,255,255,.9);--gl2:rgba(255,255,255,.95);--glb:r
 html.lk-cl.t-light .blk,html.lk-cl.t-light .card,html.lk-cl.t-light .nt,html.lk-cl.t-light .bub p,html.lk-cl.t-light .nextbar,html.lk-cl.t-light .cd.front,html.lk-cl.t-light .wk button:not(.sel){box-shadow:inset 0 0 0 .5px var(--glb),0 6px 20px -10px rgba(40,40,90,.28)!important}
  html.lk-cl.t-light .blk.now{box-shadow:inset 0 0 0 2px var(--p),0 8px 24px -12px var(--p)!important}html.lk-cl.t-light .blk.missed{box-shadow:inset 0 0 0 2px var(--a),0 6px 20px -10px rgba(40,40,90,.28)!important}
 .bub{align-items:flex-end!important;gap:6px!important}
-.bub>i.panda{width:64px!important;height:64px!important;border-radius:50%!important;flex:none;overflow:hidden;position:relative;display:grid;place-items:center;
-  background:radial-gradient(circle at 50% 35%,color-mix(in srgb,var(--p) 30%,#fff 10%),color-mix(in srgb,var(--p) 14%,var(--s)) 70%)!important;
-  box-shadow:inset 0 0 0 1.5px color-mix(in srgb,var(--p) 35%,transparent),0 6px 16px -8px color-mix(in srgb,var(--p) 60%,transparent)!important;
-  animation:pbob 3.2s ease-in-out infinite;transform-origin:50% 90%}
-.bub>i.panda svg{width:90%;height:90%;display:block;margin-top:8%;filter:drop-shadow(0 2px 3px rgba(0,0,0,.18))}
+.bub>i.panda{width:68px!important;height:68px!important;background:none!important;border-radius:0!important;box-shadow:none!important;flex:none;animation:pbob 3.2s ease-in-out infinite;transform-origin:50% 90%}
+.bub>i.panda svg{width:100%;height:100%;display:block;filter:drop-shadow(0 4px 8px rgba(0,0,0,.25))}
 .bub p{position:relative;border-radius:22px 22px 22px 22px!important;margin-bottom:20px!important}
 .bub p::before{content:"";position:absolute;left:-9px;bottom:12px;width:18px;height:18px;background:inherit;-webkit-backdrop-filter:inherit;backdrop-filter:inherit;clip-path:polygon(0 100%,100% 0,100% 100%);}
 @keyframes pbob{0%,100%{transform:translateY(0) rotate(0)}50%{transform:translateY(-2px) rotate(-2deg)}}
@@ -1385,12 +1382,12 @@ html.lk-cl.t-light .blk,html.lk-cl.t-light .card,html.lk-cl.t-light .nt,html.lk-
     }
     return '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">' +
       // ears: small and round, set wide
-      '<circle cx="21" cy="30" r="12" fill="' + K + '"/><circle cx="79" cy="30" r="12" fill="' + K + '"/>' +
-      '<circle cx="22" cy="31" r="5.5" fill="#4a3f47"/><circle cx="78" cy="31" r="5.5" fill="#4a3f47"/>' +
+      '<circle cx="22" cy="24" r="11" fill="' + K + '"/><circle cx="78" cy="24" r="11" fill="' + K + '"/>' +
+      '<circle cx="23" cy="25" r="5" fill="#4a3f47"/><circle cx="77" cy="25" r="5" fill="#4a3f47"/>' +
       // head: wide and soft
-      '<ellipse cx="50" cy="60" rx="41" ry="34" fill="' + W + '"/>' +
-      '<ellipse cx="50" cy="67" rx="36" ry="24" fill="#f7f6fa"/>' +
-      '<ellipse cx="50" cy="60" rx="41" ry="34" fill="none" stroke="rgba(0,0,0,.07)" stroke-width="1.2"/>' +
+      '<circle cx="50" cy="56" r="40" fill="' + W + '"/>' +
+      '<ellipse cx="50" cy="66" rx="33" ry="26" fill="#f7f6fa"/>' +
+      '<circle cx="50" cy="56" r="40" fill="none" stroke="rgba(0,0,0,.07)" stroke-width="1.2"/>' +
       // soft droopy eye patches (teardrop, tilted outwards and down)
       '<path d="M' + (L + 7) + ' ' + (EY - 8) + ' C' + (L + 11) + ' ' + (EY + 2) + ' ' + (L + 4) + ' ' + (EY + 12) + ' ' + (L - 5) + ' ' + (EY + 10) + ' C' + (L - 12) + ' ' + (EY + 8) + ' ' + (L - 10) + ' ' + (EY - 4) + ' ' + (L - 4) + ' ' + (EY - 9) + ' C' + (L - 1) + ' ' + (EY - 11) + ' ' + (L + 4) + ' ' + (EY - 11) + ' ' + (L + 7) + ' ' + (EY - 8) + 'z" fill="' + K + '"/>' +
       '<path d="M' + (R - 7) + ' ' + (EY - 8) + ' C' + (R - 11) + ' ' + (EY + 2) + ' ' + (R - 4) + ' ' + (EY + 12) + ' ' + (R + 5) + ' ' + (EY + 10) + ' C' + (R + 12) + ' ' + (EY + 8) + ' ' + (R + 10) + ' ' + (EY - 4) + ' ' + (R + 4) + ' ' + (EY - 9) + ' C' + (R + 1) + ' ' + (EY - 11) + ' ' + (R - 4) + ' ' + (EY - 11) + ' ' + (R - 7) + ' ' + (EY - 8) + 'z" fill="' + K + '"/>' +
