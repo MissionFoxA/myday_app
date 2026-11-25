@@ -1018,12 +1018,13 @@ button,.btn,.ib,.blk,.em,.nt,.lane h3,.wk button,.lev,.gev{transition:transform 
     var from = TABS.indexOf(current), to = TABS.indexOf(v), sv = document.getElementById('v-' + v), dist = swiped ? 90 : 28;
     if (sv) { sv.style.setProperty('--vx', from < 0 || to < 0 || from === to ? '0px' : (to > from ? dist : -dist) + 'px'); sv.style.setProperty('--vy', from === to ? '6px' : '0px'); }
     current = v; document.documentElement.classList.toggle('on-notes', v === 'notes'); document.documentElement.classList.toggle('on-home', v === 'home');
-    [].forEach.call(document.querySelectorAll('.view'), function (s) { s.classList.toggle('on', s.id === 'v-' + v); });
+    // a page that slid in by finger is already in place: keep its entrance animation off until another tab opens
+    [].forEach.call(document.querySelectorAll('.view'), function (s) { s.classList.toggle('on', s.id === 'v-' + v); if (swiped !== 'drag' || s.id !== 'v-' + v) s.classList.remove('noanim'); });
     [].forEach.call(document.querySelectorAll('.tabs button'), function (b) { b.classList.toggle('on', b.dataset.v === v); });
     if (typeof setTabPill === 'function') setTabPill();
-    if (sv && !(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches)) { sv.classList.remove('rise'); void sv.offsetWidth; sv.classList.add('rise'); clearTimeout(sv._rise); sv._rise = setTimeout(function () { sv.classList.remove('rise'); }, 1400); }
+    if (sv && swiped !== 'drag' && !(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches)) { sv.classList.remove('rise'); void sv.offsetWidth; sv.classList.add('rise'); clearTimeout(sv._rise); sv._rise = setTimeout(function () { sv.classList.remove('rise'); }, 1400); }
     window.scrollTo(0, 0); var ap = document.querySelector('.app'); if (ap) ap.scrollTop = 0;
-    if (loaders[v]) loaders[v]();
+    if (loaders[v]) { if (swiped === 'drag') setTimeout(function () { if (current === v) loaders[v](); }, 350); else loaders[v](); }
   }
   [].forEach.call(document.querySelectorAll('.tabs button'), function (b) { b.onclick = function () { show(b.dataset.v); }; });
 
@@ -2615,7 +2616,7 @@ button,.btn,.ib,.blk,.em,.nt,.lane h3,.wk button,.lev,.gev{transition:transform 
       var t = e.touches[0], dx = t.clientX - x0, dy = t.clientY - y0;
       if (!mode) {
         if (Math.abs(dx) < 10 && Math.abs(dy) < 10) return;
-        if (Math.abs(dy) > Math.abs(dx) * 0.8) { mode = 'v'; return; }
+        if (Math.abs(dx) < Math.abs(dy) * 1.3) { mode = 'v'; return; }
         mode = 'h'; cur = $('v-' + current); W = cur.offsetWidth + 36; tin.classList.add('drag');
         document.documentElement.classList.add('tabdrag');
       }
@@ -2639,12 +2640,14 @@ button,.btn,.ib,.blk,.em,.nt,.lane h3,.wk button,.lev,.gev{transition:transform 
       void cur.offsetWidth;
       place(target);
       if (!go) tin.style.removeProperty('--ti');
-      var to = TABS[nbIdx];
-      setTimeout(function () {
-        if (go) { var v = $('v-' + to); v.classList.add('noanim'); cleanup(); show(to, true); setTimeout(function () { v.classList.remove('noanim'); }, 50); }
+      var to = TABS[nbIdx], done = false;
+      function land() {
+        if (done) return; done = true; cur.removeEventListener('transitionend', land);
+        if (go) { $('v-' + to).classList.add('noanim'); cleanup(); show(to, 'drag'); }
         else cleanup();
         tin.style.removeProperty('--ti'); setTabPill();
-      }, dur + 20);
+      }
+      cur.addEventListener('transitionend', land); setTimeout(land, dur + 60);
     }
     app.addEventListener('touchend', finish, { passive: true });
     app.addEventListener('touchcancel', finish, { passive: true });
