@@ -638,8 +638,11 @@ html.lk-cl.t-light{--gl:rgba(255,255,255,.9);--gl2:rgba(255,255,255,.95);--glb:r
 html.lk-cl.t-light .blk,html.lk-cl.t-light .card,html.lk-cl.t-light .nt,html.lk-cl.t-light .bub p,html.lk-cl.t-light .nextbar,html.lk-cl.t-light .cd.front,html.lk-cl.t-light .wk button:not(.sel){box-shadow:inset 0 0 0 .5px var(--glb),0 6px 20px -10px rgba(40,40,90,.28)!important}
  html.lk-cl.t-light .blk.now{box-shadow:inset 0 0 0 2px var(--p),0 8px 24px -12px var(--p)!important}html.lk-cl.t-light .blk.missed{box-shadow:inset 0 0 0 2px var(--a),0 6px 20px -10px rgba(40,40,90,.28)!important}
 .bub{align-items:flex-end!important;gap:6px!important}
-.bub>i.panda{width:74px!important;height:74px!important;background:none!important;border-radius:0!important;flex:none;animation:pbob 3.2s ease-in-out infinite;transform-origin:50% 90%}
-.bub>i.panda svg{width:100%;height:100%;display:block;filter:drop-shadow(0 4px 8px rgba(0,0,0,.25))}
+.bub>i.panda{width:64px!important;height:64px!important;border-radius:50%!important;flex:none;overflow:hidden;position:relative;display:grid;place-items:center;
+  background:radial-gradient(circle at 50% 35%,color-mix(in srgb,var(--p) 30%,#fff 10%),color-mix(in srgb,var(--p) 14%,var(--s)) 70%)!important;
+  box-shadow:inset 0 0 0 1.5px color-mix(in srgb,var(--p) 35%,transparent),0 6px 16px -8px color-mix(in srgb,var(--p) 60%,transparent)!important;
+  animation:pbob 3.2s ease-in-out infinite;transform-origin:50% 90%}
+.bub>i.panda svg{width:90%;height:90%;display:block;margin-top:8%;filter:drop-shadow(0 2px 3px rgba(0,0,0,.18))}
 .bub p{position:relative;border-radius:22px 22px 22px 22px!important;margin-bottom:20px!important}
 .bub p::before{content:"";position:absolute;left:-9px;bottom:12px;width:18px;height:18px;background:inherit;-webkit-backdrop-filter:inherit;backdrop-filter:inherit;clip-path:polygon(0 100%,100% 0,100% 100%);}
 @keyframes pbob{0%,100%{transform:translateY(0) rotate(0)}50%{transform:translateY(-2px) rotate(-2deg)}}
@@ -647,7 +650,6 @@ html.lk-cl.t-light .blk,html.lk-cl.t-light .card,html.lk-cl.t-light .nt,html.lk-
 .bub>i.panda.pop{animation:ppop .45s ease-out,pbob 3.2s ease-in-out .45s infinite}
 @keyframes ppop{0%{transform:scale(.7)}60%{transform:scale(1.08)}100%{transform:scale(1)}}
 @media(prefers-reduced-motion:reduce){.bub>i.panda{animation:none!important}}
-html.lk-cl .bub>i.panda{background:none!important}
 /* sheets follow the finger when pulled down */
 .sheet.drag{transition:none!important}
 </style>
