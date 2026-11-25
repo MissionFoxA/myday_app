@@ -509,6 +509,15 @@ button:active:not([disabled]),.btn:active,[role=button]:active{transform:scale(.
 .conf{position:fixed;z-index:42;width:9px;height:14px;border-radius:3px;pointer-events:none;top:0;left:0}
 @keyframes wig{20%{transform:rotate(-6deg)}40%{transform:rotate(5deg)}60%{transform:rotate(-3deg)}80%{transform:rotate(2deg)}}
 .plant svg.wig{animation:wig .9s ease-in-out;transform-origin:50% 90%}
+.plant .sway{transform-origin:75px 124px;animation:sway 7s ease-in-out infinite}
+@keyframes sway{0%,100%{transform:rotate(-1.2deg)}50%{transform:rotate(1.2deg)}}
+.plant .bfly .wing{transform-box:fill-box;transform-origin:center;animation:flap .5s ease-in-out infinite alternate}
+@keyframes flap{to{transform:scaleX(.35)}}
+.plant .bfly{animation:hover 4s ease-in-out infinite}
+@keyframes hover{0%,100%{translate:0 0}50%{translate:6px -6px}}
+.plant .spk{transform-box:fill-box;transform-origin:center;animation:twk 2.4s ease-in-out infinite;opacity:0}
+@keyframes twk{0%,100%{opacity:0;scale:.4}50%{opacity:1;scale:1}}
+@media(prefers-reduced-motion:reduce){.plant .sway,.plant .bfly,.plant .bfly .wing{animation:none}.plant .spk{animation:none;opacity:.8}}
 /* friendly empty screens */
 .empty::before{content:"";display:block;width:96px;height:96px;margin:0 auto 12px;background:linear-gradient(160deg,var(--p),var(--a));
   -webkit-mask:var(--emp) center/contain no-repeat;mask:var(--emp) center/contain no-repeat;opacity:.9}
@@ -1270,26 +1279,72 @@ button:active:not([disabled]),.btn:active,[role=button]:active{transform:scale(.
       .catch(function (e) { $('nt-save').disabled = false; fail(e); loaders.notes(); });
   };
 
-  /** Plant drawing: green leaves = done, brown drooping = missed, dashed = still to grow. */
+  /** Plant drawing: green leaves = done, brown drooping = missed, dashed = still to grow.
+   *  It fills out as the day goes on: a taller stem, side branches, buds, flowers, then a butterfly and sparkles. */
   var lastLeaves = null;
   function renderPlant(p) {
     var leaves = [];
     for (var i = 0; i < p.done; i++) leaves.push('done');
-    for (i = 0; i < p.missed; i++) leaves.push('missed');
-    for (i = 0; i < p.toGrow; i++) leaves.push('grow');
-    var shown = leaves.slice(0, 10), n = Math.max(shown.length, 1);
-    var top = Math.max(18, 116 - n * 10 - 8), stem = 'M75 124 C73 ' + (124 - (124 - top) * .4) + ' 78 ' + (124 - (124 - top) * .7) + ' 75 ' + top;
-    var svg = '<svg viewBox="0 0 150 180" role="img" aria-label="Your plant: ' + p.done + ' leaves grown, ' + p.missed + ' wilting, ' + p.toGrow + ' still to grow">' +
-      '<ellipse cx="75" cy="170" rx="44" ry="6" fill="#0000001f"/>' +
-      '<path d="M48 132h54l-7 36H55z" fill="var(--pot)"/><rect x="43" y="124" width="64" height="11" rx="4" fill="var(--pot)"/><rect x="43" y="124" width="64" height="4" rx="2" fill="#ffffff40"/>' +
-      '<path d="' + stem + '" stroke="var(--leaf2)" stroke-width="5" fill="none" stroke-linecap="round"/>';
-    shown.forEach(function (kind, i) {
-      var y = 116 - i * ((116 - top - 4) / n), side = i % 2 ? 1 : -1;
-      var leaf = 'M0 0 C' + 12 * side + ' -14 ' + 34 * side + ' -16 ' + 38 * side + ' -8 C' + 30 * side + ' 2 ' + 12 * side + ' 6 0 0z';
-      if (kind === 'done') svg += '<path transform="translate(75 ' + y + ')" d="' + leaf + '" fill="' + (i % 2 ? 'var(--leaf2)' : 'var(--leaf)') + '"/>';
-      else if (kind === 'missed') svg += '<path transform="translate(75 ' + y + ') rotate(' + (side > 0 ? 55 : -55) + ')" d="' + leaf + '" fill="var(--wilt)"/>';
-      else svg += '<path transform="translate(75 ' + y + ')" d="' + leaf + '" fill="none" stroke="var(--m)" stroke-width="1.6" stroke-dasharray="4 4" opacity=".6"/>';
+    for (i = 0; i < Math.min(4, p.missed); i++) leaves.push('missed');
+    for (i = 0; i < Math.min(5, p.toGrow); i++) leaves.push('grow');
+    var D = p.done, all = leaves.length;
+    var mainN = Math.min(12, Math.max(all, 1)), rest = leaves.slice(12), nb = Math.min(4, Math.ceil(rest.length / 4));
+    var top = Math.max(16, 112 - Math.min(96, 24 + all * 5));
+    var sx = 75, sy = 124, bend = D >= 8 ? 4 : 2;
+    function stemAt(t) { // point on the stem, t from 0 (pot) to 1 (top)
+      var y = sy - (sy - top) * t; return [sx + Math.sin(t * Math.PI) * bend * (t < .5 ? -1 : 1), y];
+    }
+    function leafPath(side, sc) { return 'M0 0 C' + 12 * side * sc + ' ' + -14 * sc + ' ' + 34 * side * sc + ' ' + -16 * sc + ' ' + 38 * side * sc + ' ' + -8 * sc + ' C' + 30 * side * sc + ' ' + 2 * sc + ' ' + 12 * side * sc + ' ' + 6 * sc + ' 0 0z'; }
+    function leafSvg(kind, x, y, side, sc, i) {
+      var d = leafPath(side, sc), tr = 'translate(' + x.toFixed(1) + ' ' + y.toFixed(1) + ')';
+      if (kind === 'done') return '<path transform="' + tr + '" d="' + d + '" fill="' + (i % 2 ? 'var(--leaf2)' : 'var(--leaf)') + '"/>' +
+        (sc >= .9 ? '<path transform="' + tr + '" d="M0 0 C' + 14 * side * sc + ' -9 ' + 26 * side * sc + ' -10 ' + 34 * side * sc + ' -8" stroke="#ffffff38" stroke-width="1.2" fill="none"/>' : '');
+      if (kind === 'missed') return '<path transform="' + tr + ' rotate(' + (side > 0 ? 55 : -55) + ')" d="' + d + '" fill="var(--wilt)"/>';
+      return '<path transform="' + tr + '" d="' + d + '" fill="none" stroke="var(--m)" stroke-width="1.6" stroke-dasharray="4 4" opacity=".6"/>';
+    }
+    function flower(x, y, k, sc) {
+      var cols = ['var(--cb-pink)', 'var(--a)', 'var(--cb-purple)', '#ffd45e', 'var(--cb-blue)', '#ff8a8a'], c = cols[k % cols.length], out = '<g transform="translate(' + x.toFixed(1) + ' ' + y.toFixed(1) + ') scale(' + sc + ')" class="fl">';
+      for (var j = 0; j < 5; j++) { var an = j * 72 * Math.PI / 180; out += '<ellipse cx="' + (Math.cos(an) * 6).toFixed(1) + '" cy="' + (Math.sin(an) * 6).toFixed(1) + '" rx="5" ry="3.6" transform="rotate(' + (j * 72) + ' ' + (Math.cos(an) * 6).toFixed(1) + ' ' + (Math.sin(an) * 6).toFixed(1) + ')" fill="' + c + '"/>'; }
+      return out + '<circle r="3.6" fill="#ffe27a"/><circle r="1.4" cx="-1" cy="-1" fill="#fff8"/></g>';
+    }
+    function bud(x, y) { return '<g transform="translate(' + x.toFixed(1) + ' ' + y.toFixed(1) + ')"><ellipse rx="3.4" ry="5" fill="var(--leaf2)"/><ellipse cy="-3" rx="2.4" ry="2.6" fill="var(--cb-pink)"/></g>'; }
+
+    var g = '', spots = []; // spots where flowers can open: stem top first, then branch tips
+    var t0 = stemAt(1), stemD = 'M' + sx + ' ' + sy + ' C' + (sx - bend) + ' ' + (sy - (sy - top) * .4) + ' ' + (sx + bend + 3) + ' ' + (sy - (sy - top) * .7) + ' ' + t0[0] + ' ' + top;
+    g += '<path d="' + stemD + '" stroke="var(--leaf2)" stroke-width="' + (D >= 12 ? 6 : 5) + '" fill="none" stroke-linecap="round"/>';
+    spots.push([t0[0], top - 4]);
+    // side branches (drawn under the main leaves)
+    var bl = '';
+    for (var bi = 0; bi < nb; bi++) {
+      var side = bi % 2 ? 1 : -1, tb = .28 + bi * .14, a0 = stemAt(tb), len = 30 + (bi < 2 ? 4 : 0);
+      var ex = a0[0] + side * len, ey = a0[1] - 24;
+      g += '<path d="M' + a0[0].toFixed(1) + ' ' + a0[1].toFixed(1) + ' Q' + (a0[0] + side * len * .5).toFixed(1) + ' ' + (a0[1] - 4).toFixed(1) + ' ' + ex.toFixed(1) + ' ' + ey.toFixed(1) + '" stroke="var(--leaf2)" stroke-width="3" fill="none" stroke-linecap="round"/>';
+      rest.slice(bi * 4, bi * 4 + 4).forEach(function (kind, j) {
+        var u = .3 + j * .23, bx = a0[0] + side * len * u, by = a0[1] - 4 * u - 20 * u * u, ls = j % 2 ? side : -side;
+        bl += leafSvg(kind, bx, by, j === 3 ? side : ls, .62, j);
+      });
+      spots.push([ex, ey - 2]);
+    }
+    g += bl;
+    // main stem leaves, alternating sides
+    leaves.slice(0, mainN).forEach(function (kind, i) {
+      var t = .1 + (i + .5) * (.86 / mainN), pt = stemAt(t), sd = i % 2 ? 1 : -1;
+      g += leafSvg(kind, pt[0], pt[1], sd, 1 - t * .25, i);
+      if (i >= 4 && i % 4 === 1) spots.push([pt[0] + sd * 30, pt[1] - 8]);
     });
+    // flowers: one more for every 5 things done; a bud shows when the next one is close
+    var nf = Math.min(spots.length, Math.floor(D / 5));
+    for (var f = 0; f < nf; f++) g += flower(spots[f][0], spots[f][1], f, f === 0 ? 1.15 : .85);
+    if (nf < spots.length && D >= 3 && D % 5 >= 3) g += bud(spots[nf][0], spots[nf][1]);
+    var extra = '';
+    if (D >= 8) extra += '<path d="M47 125 q3 -9 5 0 M52 125 q2 -7 4 0 M98 125 q2 -8 4 0 M102 125 q3 -6 5 0" stroke="var(--leaf)" stroke-width="2" fill="none" stroke-linecap="round"/>';
+    if (D >= 15) extra += '<g class="bfly" transform="translate(' + (D % 2 ? 118 : 30) + ' ' + Math.max(18, top + 6) + ')"><g class="wing"><path d="M0 0 C-9 -12 -16 -4 -9 2 C-14 8 -5 11 0 2Z" fill="var(--cb-purple)"/><path d="M0 0 C9 -12 16 -4 9 2 C14 8 5 11 0 2Z" fill="var(--cb-pink)"/></g><rect x="-.9" y="-5" width="1.8" height="10" rx=".9" fill="#3a2a4a"/></g>';
+    if (D >= 25) [[22, 40], [128, 62], [34, 92], [120, 24]].forEach(function (q, k) { extra += '<path class="spk" style="animation-delay:' + (k * .6) + 's" transform="translate(' + q[0] + ' ' + q[1] + ')" d="M0 -5 L1.3 -1.3 L5 0 L1.3 1.3 L0 5 L-1.3 1.3 L-5 0 L-1.3 -1.3Z" fill="#ffe27a"/>'; });
+    var potDeco = D >= 20 ? '<path d="M52 146 h46" stroke="#ffffff55" stroke-width="2.5" stroke-dasharray="5 5" stroke-linecap="round"/>' : '';
+    var svg = '<svg viewBox="0 0 150 180" role="img" aria-label="Your plant: ' + p.done + ' leaves grown, ' + p.missed + ' wilting, ' + p.toGrow + ' still to grow' + (nf ? ', ' + nf + ' flowers' : '') + '">' +
+      '<ellipse cx="75" cy="170" rx="44" ry="6" fill="#0000001f"/>' +
+      '<g class="sway">' + g + '</g>' +
+      '<path d="M48 132h54l-7 36H55z" fill="var(--pot)"/><rect x="43" y="124" width="64" height="11" rx="4" fill="var(--pot)"/><rect x="43" y="124" width="64" height="4" rx="2" fill="#ffffff40"/>' + potDeco + extra;
     svg += '</svg>';
     var total = p.done + p.missed + p.toGrow;
     var grew = lastLeaves !== null && p.done > lastLeaves; lastLeaves = p.done;
