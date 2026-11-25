@@ -708,6 +708,34 @@ html.standalone .addmenu{position:absolute}
 .cd .acts{margin-top:18px}
 .app{transition:opacity .18s}
 html.menu-on .app{opacity:.3}
+
+/* ---------- motion: finger-following tabs, sliding tab pill, press feedback ---------- */
+.view.peek{display:block!important;position:absolute;z-index:2;pointer-events:none;animation:none!important;will-change:transform}
+html.tabdrag .view.on{will-change:transform;position:relative;z-index:3}
+.view.noanim{animation:none!important}
+.tabs .in{position:relative}
+.tabs .in::before{content:"";position:absolute;top:0;bottom:0;left:0;width:calc(100% / 4);border-radius:28px;background:color-mix(in srgb,var(--t) 10%,transparent);
+  transform:translateX(calc(var(--ti,0) * 100%));transition:transform .42s cubic-bezier(.3,1.35,.5,1);pointer-events:none}
+.tabs .in.drag::before{transition:none}
+.tabs button.on,html.lk-cl .tabs button.on{background:transparent!important}
+.tabs button{position:relative;transition:color .25s,transform .18s cubic-bezier(.3,1.5,.5,1)}
+.tabs button.on svg{animation:tpop .38s cubic-bezier(.3,1.6,.5,1)}
+@keyframes tpop{40%{transform:scale(1.18) translateY(-2px)}}
+button,.btn,.ib,.blk,.em,.nt,.lane h3,.wk button,.lev,.gev{transition:transform .16s cubic-bezier(.3,1.5,.5,1),background-color .2s,opacity .2s,box-shadow .2s}
+.btn:active,.ib:active,.wk button:active,.fab:active,.addmenu button:active,.chk:active,.nbshow:active{transform:scale(.93)}
+.blk:active:not([style*="translate"]),.em:active,.nt:active,.lev:active{transform:scale(.985)}
+.fab{transition:transform .25s cubic-bezier(.3,1.6,.5,1),box-shadow .25s}
+.fab:active{transform:scale(.88)}
+.sheet.on{transition:transform .42s cubic-bezier(.2,1.12,.35,1)!important}
+.sheet.drag{transition:none!important}
+.view.rise #h-blocks .blk,.view.rise #nt-list .nt,.view.rise #i-body .em{animation:rise .42s cubic-bezier(.2,.9,.3,1.1) both}
+.view.rise #h-blocks .blk:nth-of-type(2),.view.rise #nt-list .nt:nth-child(2),.view.rise #i-body .em:nth-of-type(2){animation-delay:.03s}
+.view.rise #h-blocks .blk:nth-of-type(3),.view.rise #nt-list .nt:nth-child(3),.view.rise #i-body .em:nth-of-type(3){animation-delay:.06s}
+.view.rise #h-blocks .blk:nth-of-type(4),.view.rise #nt-list .nt:nth-child(4),.view.rise #i-body .em:nth-of-type(4){animation-delay:.09s}
+.view.rise #h-blocks .blk:nth-of-type(n+5),.view.rise #nt-list .nt:nth-child(n+5),.view.rise #i-body .em:nth-of-type(n+5){animation-delay:.12s}
+@keyframes rise{from{opacity:0;transform:translateY(10px) scale(.98)}}
+.lvtrack i{transition:width .9s cubic-bezier(.3,1.25,.5,1)}
+@media (prefers-reduced-motion: reduce){#h-blocks .blk,#nt-list .nt,#i-body .em,.tabs button.on svg{animation:none!important}.tabs .in::before{transition:none}}
 </style>
 </head>
 <body>
@@ -992,6 +1020,8 @@ html.menu-on .app{opacity:.3}
     current = v; document.documentElement.classList.toggle('on-notes', v === 'notes'); document.documentElement.classList.toggle('on-home', v === 'home');
     [].forEach.call(document.querySelectorAll('.view'), function (s) { s.classList.toggle('on', s.id === 'v-' + v); });
     [].forEach.call(document.querySelectorAll('.tabs button'), function (b) { b.classList.toggle('on', b.dataset.v === v); });
+    if (typeof setTabPill === 'function') setTabPill();
+    if (sv && !(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches)) { sv.classList.remove('rise'); void sv.offsetWidth; sv.classList.add('rise'); clearTimeout(sv._rise); sv._rise = setTimeout(function () { sv.classList.remove('rise'); }, 1400); }
     window.scrollTo(0, 0); var ap = document.querySelector('.app'); if (ap) ap.scrollTop = 0;
     if (loaders[v]) loaders[v]();
   }
@@ -2545,25 +2575,83 @@ html.menu-on .app{opacity:.3}
     document.addEventListener('visibilitychange', function () { if (!document.hidden) setTimeout(fit, 50); });
   })();
   // ---------- swipe left/right on the page to switch tabs ----------
+  // The page follows the finger: the next tab slides in beside it, and on release it snaps over or springs back.
   // Not on things that have their own sideways gesture (Now cards, week strip, inputs), not while a sheet or the calendar is open.
   (function () {
-    var x0 = null, y0 = 0, t0 = 0, skip = false;
-    var app = document.querySelector('.app');
+    var app = document.querySelector('.app'), tin = document.querySelector('.tabs .in');
+    var x0 = null, y0 = 0, t0 = 0, skip = false, mode = '', cur = null, nb = null, nbIdx = -1, W = 0, lastX = 0, lastT = 0, vx = 0, dxNow = 0;
+    var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+    function scrolled() { return document.documentElement.classList.contains('standalone') ? app.scrollTop : window.scrollY; }
+    function setNb(j) {
+      if (j === nbIdx) return;
+      if (nb) { nb.classList.remove('peek'); nb.style.cssText = ''; }
+      nbIdx = j; nb = j >= 0 && j < TABS.length ? $('v-' + TABS[j]) : null;
+      if (nb) {
+        nb.classList.add('peek');
+        nb.style.top = (cur.offsetTop + scrolled()) + 'px'; nb.style.left = cur.offsetLeft + 'px'; nb.style.width = cur.offsetWidth + 'px';
+        if (loaders[TABS[j]] && nb.querySelector('.skel')) { try { loaders[TABS[j]](); } catch (x) { /* shows its skeleton until opened */ } }
+      }
+    }
+    function place(dx) {
+      dxNow = dx;
+      cur.style.transform = 'translate3d(' + dx + 'px,0,0)';
+      if (nb) nb.style.transform = 'translate3d(' + (dx + (dx < 0 ? W : -W)) + 'px,0,0)';
+      var i = TABS.indexOf(current); tin.style.setProperty('--ti', Math.max(0, Math.min(TABS.length - 1, i - dx / W)));
+    }
+    function cleanup() {
+      if (cur) { cur.style.transform = ''; cur.style.transition = ''; }
+      if (nb) { nb.classList.remove('peek'); nb.style.cssText = ''; }
+      cur = nb = null; nbIdx = -1; mode = ''; tin.classList.remove('drag');
+      document.documentElement.classList.remove('tabdrag');
+    }
     app.addEventListener('touchstart', function (e) {
-      if (e.touches.length !== 1) { x0 = null; return; }
+      if (e.touches.length !== 1 || mode === 'anim') { x0 = null; return; }
       var t = e.target;
-      skip = !!(openId || CAL.open || t.closest('.stack,.wk,input,textarea,select,.chips,.newnote,[data-sw]'));
-      x0 = e.touches[0].clientX; y0 = e.touches[0].clientY; t0 = Date.now();
+      skip = !!(openId || CAL.open || t.closest('.stack,.wk,input,textarea,select,.chips,.newnote,[data-sw],.addmenu'));
+      x0 = e.touches[0].clientX; y0 = e.touches[0].clientY; t0 = lastT = Date.now(); lastX = x0; vx = 0; mode = '';
     }, { passive: true });
-    app.addEventListener('touchend', function (e) {
-      if (x0 === null || skip) { x0 = null; return; }
-      var t = e.changedTouches[0], dx = t.clientX - x0, dy = t.clientY - y0, dt = Date.now() - t0; x0 = null;
-      if (Math.abs(dx) < 70 || Math.abs(dy) > Math.abs(dx) * 0.6 || dt > 700) return;
+    app.addEventListener('touchmove', function (e) {
+      if (x0 === null || skip || mode === 'anim') return;
+      var t = e.touches[0], dx = t.clientX - x0, dy = t.clientY - y0;
+      if (!mode) {
+        if (Math.abs(dx) < 10 && Math.abs(dy) < 10) return;
+        if (Math.abs(dy) > Math.abs(dx) * 0.8) { mode = 'v'; return; }
+        mode = 'h'; cur = $('v-' + current); W = cur.offsetWidth + 36; tin.classList.add('drag');
+        document.documentElement.classList.add('tabdrag');
+      }
+      if (mode !== 'h') return;
+      e.preventDefault();
+      var now = Date.now(); if (now > lastT) { vx = 0.7 * vx + 0.3 * (t.clientX - lastX) / (now - lastT); } lastX = t.clientX; lastT = now;
       var i = TABS.indexOf(current), j = i + (dx < 0 ? 1 : -1);
-      if (j < 0 || j >= TABS.length) return;
-      show(TABS[j], true);
-    }, { passive: true });
+      if (j < 0 || j >= TABS.length) { setNb(-1); dx = dx * 0.28; } // edge: rubber band
+      else setNb(j);
+      place(dx);
+    }, { passive: false });
+    function finish() {
+      if (mode !== 'h') { x0 = null; mode = mode === 'anim' ? 'anim' : ''; return; }
+      x0 = null;
+      var go = nb && (Math.abs(dxNow) > W * 0.28 || (Math.abs(vx) > 0.45 && (vx < 0) === (dxNow < 0)));
+      var dur = reduce ? 0 : go ? Math.max(160, Math.min(320, (W - Math.abs(dxNow)) / Math.max(0.6, Math.abs(vx)))) : 380;
+      var ease = go ? 'cubic-bezier(.2,.8,.25,1)' : 'cubic-bezier(.3,1.45,.5,1)';
+      mode = 'anim'; tin.classList.remove('drag');
+      cur.style.transition = 'transform ' + dur + 'ms ' + ease; if (nb) nb.style.transition = 'transform ' + dur + 'ms ' + ease;
+      var target = go ? (dxNow < 0 ? -W : W) : 0;
+      void cur.offsetWidth;
+      place(target);
+      if (!go) tin.style.removeProperty('--ti');
+      var to = TABS[nbIdx];
+      setTimeout(function () {
+        if (go) { var v = $('v-' + to); v.classList.add('noanim'); cleanup(); show(to, true); setTimeout(function () { v.classList.remove('noanim'); }, 50); }
+        else cleanup();
+        tin.style.removeProperty('--ti'); setTabPill();
+      }, dur + 20);
+    }
+    app.addEventListener('touchend', finish, { passive: true });
+    app.addEventListener('touchcancel', finish, { passive: true });
   })();
+  // the highlight under the bottom tabs slides to the open tab
+  function setTabPill() { var tin = document.querySelector('.tabs .in'); if (tin && !tin.classList.contains('drag')) tin.style.setProperty('--ti', TABS.indexOf(current)); }
+  setTabPill();
 
   // ---------- time-of-day colours for the background glow ----------
   function tod() {
