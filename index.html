@@ -1034,9 +1034,7 @@ html.lk-cl .wk i.no,.wk i.no{background:transparent!important}
       else txt = 'Next: <b>' + esc(b.title) + '</b> in ' + durLabel(st - now);
     }
     if (!txt) return '';
-    return '<div class="nextbar" aria-live="polite"><span class="nbt">' + txt + '</span>' +
-      '</div>' +
-      (FOCUS && nx >= 0 ? '<button class="nbshow" id="nb-show">Show everything for a moment</button>' : '');
+    return (FOCUS && nx >= 0 ? '<button class="nbshow" id="nb-show">Show everything for a moment</button>' : '');
   }
   function nowMarkHtml(now) { return '<span class="tm nowtm">' + hm(now.toISOString()) + '</span><div class="nowline" aria-hidden="true"></div>'; }
   // keep the countdown and the now line moving while Home is open
