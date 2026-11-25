@@ -450,6 +450,12 @@ html.standalone .fabl{position:absolute}
 .pill.woke{display:inline-flex;align-items:center;gap:4px;color:var(--t)}.pill.woke[hidden]{display:none}.pill.woke svg{width:14px;height:14px;color:var(--a)}
 .nwoke{font-size:13px;color:var(--m)}.nwoke[hidden]{display:none}
 
+/* Apple Calendar */
+.xcrow{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--s2);border-radius:14px;margin:8px 0}
+.xcrow .dot{width:12px;height:12px;border-radius:50%;background:var(--col);flex:none}
+.xcrow div{flex:1;min-width:0}.xcrow b{display:block;font-weight:600}.xcrow small{color:var(--m);font-size:13px}.xcrow small.err{color:var(--red)}
+.xcrow .x{width:36px;height:36px;border-radius:10px;color:var(--m);display:grid;place-items:center}.xcrow .x svg{width:18px;height:18px}
+.xchelp{margin:8px 0 2px;font-size:14px}.xchelp summary{color:var(--p);cursor:pointer;font-weight:500}.xchelp ol{margin:6px 0 0;padding-left:20px}.xchelp li{margin:3px 0}
 /* morning routine */
 .rthead{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px}.rthead h2{margin:0;font-size:18px}
 .rtpresets{display:flex;gap:6px;flex-wrap:wrap}
@@ -583,6 +589,16 @@ button:active:not([disabled]),.btn:active,[role=button]:active{transform:scale(.
     <p class="small">Your iPhone can tell the app when you get up: make a Shortcuts automation for "When my wake-up alarm is stopped" that opens this link.</p>
     <div class="row" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px"><button class="btn a sm" id="wk-copy">Copy wake-up link</button><button class="btn g sm" id="wk-up">I'm up now</button></div>
     <p class="small" id="wk-msg"></p></div>
+  <div class="set-sec"><h3>Apple Calendar</h3><p class="small">Show events from your iPhone's Calendar app here. They stay read-only: change them in Apple Calendar.</p>
+    <div id="xc-list"></div>
+    <details class="xchelp"><summary>How to get the link</summary><ol class="small">
+      <li>Open the <b>Calendar</b> app on your iPhone and tap <b>Calendars</b> at the bottom.</li>
+      <li>Tap the <b>(i)</b> next to an iCloud calendar.</li>
+      <li>Turn on <b>Public Calendar</b>, tap <b>Share Link…</b> and then <b>Copy</b>.</li>
+      <li>Paste it below. Anyone who has this link can see that calendar, so keep it to yourself.</li></ol></details>
+    <label class="f" for="xc-url">Calendar link</label><input type="text" inputmode="url" id="xc-url" placeholder="webcal://p…-caldav.icloud.com/published/…" autocomplete="off" autocapitalize="off" spellcheck="false">
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px"><button class="btn a sm" id="xc-add">Connect</button><button class="btn g sm" id="xc-refresh" hidden>Refresh now</button></div>
+    <p class="small" id="xc-msg"></p></div>
   <div class="set-sec"><h3>AI</h3><p class="small">Rules is free and instant. Gemini is smarter and also writes the buddy message, using your free key.</p>
     <label class="f" for="st-engine">Engine</label><select id="st-engine"><option value="rules">Rules (built-in)</option><option value="gemini">Gemini</option></select>
     <label class="f" for="st-model">Gemini model</label><input type="text" id="st-model">
@@ -1321,8 +1337,42 @@ button:active:not([disabled]),.btn:active,[role=button]:active{transform:scale(.
     call('apiSaveRoutines', RT.presets).then(function (st) { $('rt-save').disabled = false; toast('Routines saved'); delete homeDays[dKey(new Date())]; homeShown = ''; scheduleAlerts(); openSheet('s-set'); loadSettings(); rtFill(st); })
       .catch(function (e) { $('rt-save').disabled = false; fail(e); });
   };
+  // ---- Apple Calendar links ----
+  var XC_COLORS = ['purple', 'green', 'orange', 'pink', 'blue'];
+  function xcAfter() { calRefresh(); homeDays = {}; homeShown = ''; scheduleAlerts(); }
+  function xcFill(list) {
+    list = list || [];
+    $('xc-refresh').hidden = !list.length;
+    $('xc-list').innerHTML = list.map(function (c) {
+      var when = c.at ? new Date(c.at) : null;
+      var sub = c.err ? '<small class="err">' + esc(c.err) + '</small>' : '<small>' + c.count + ' events' + (when ? ' · updated ' + hm(c.at) : '') + ' · tap the dot to change colour</small>';
+      return '<div class="xcrow evc ' + esc(c.color) + '"><button class="dot" data-xcol="' + esc(c.id) + '" aria-label="Change colour"></button><div><b>' + esc(c.name || 'Apple Calendar') + '</b>' + sub + '</div>' +
+        '<button class="x" data-xdel="' + esc(c.id) + '" aria-label="Disconnect ' + esc(c.name || 'calendar') + '"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>';
+    }).join('');
+    [].forEach.call($('xc-list').querySelectorAll('[data-xdel]'), function (b) { b.onclick = function () {
+      if (!confirm('Stop showing this calendar in the app? Nothing is deleted in Apple Calendar.')) return;
+      call('apiExtCalRemove', b.dataset.xdel).then(function (l) { xcFill(l); xcAfter(); toast('Calendar disconnected'); }).catch(fail); }; });
+    [].forEach.call($('xc-list').querySelectorAll('[data-xcol]'), function (b) { b.onclick = function () {
+      var c = list.filter(function (x) { return x.id === b.dataset.xcol; })[0], next = XC_COLORS[(XC_COLORS.indexOf(c.color) + 1) % XC_COLORS.length];
+      call('apiExtCalColor', c.id, next).then(function (l) { xcFill(l); xcAfter(); }).catch(fail); }; });
+  }
+  $('xc-add').onclick = function () {
+    var u = $('xc-url').value.trim(); if (!u) { $('xc-msg').textContent = 'Paste the link first.'; return; }
+    var b = $('xc-add'); b.disabled = true; $('xc-msg').textContent = 'Reading your calendar…';
+    call('apiExtCalAdd', u).then(function (l) { b.disabled = false; $('xc-url').value = ''; xcFill(l); var c = l[l.length - 1]; $('xc-msg').textContent = 'Connected "' + (c.name || 'Apple Calendar') + '" with ' + c.count + ' events.'; xcAfter(); })
+      .catch(function (x) { b.disabled = false; $('xc-msg').textContent = (x && x.message) || String(x); });
+  };
+  $('xc-refresh').onclick = function () {
+    var b = $('xc-refresh'); b.disabled = true; $('xc-msg').textContent = 'Refreshing…';
+    call('apiExtCalRefresh').then(function (l) { b.disabled = false; xcFill(l); $('xc-msg').textContent = 'Up to date.'; xcAfter(); }).catch(function (x) { b.disabled = false; fail(x); });
+  };
+  function extInfo(ev) {
+    var when = ev.allDay ? dayName(ev.start, { weekday: 'short', day: 'numeric', month: 'short' }) : dayName(ev.start, { weekday: 'short', day: 'numeric', month: 'short' }) + ', ' + hm(ev.start) + '–' + hm(ev.end);
+    toast(ev.title + ' · ' + when + (ev.location ? ' · ' + ev.location : '') + '. From ' + (ev.cal || 'Apple Calendar') + ': change it in the Calendar app.');
+  }
   function loadSettings() {
     call('apiRoutines').then(rtFill).catch(function () {});
+    call('apiExtCals').then(xcFill).catch(function () {});
     showWoke();
     var conn = null; try { conn = JSON.parse(localStorage.getItem('myday_conn') || 'null'); } catch (e) {}
     $('wk-copy').hidden = !conn; $('wk-msg').textContent = conn ? '' : 'Open the phone app (home screen icon) to copy the link.';
@@ -1628,6 +1678,7 @@ button:active:not([disabled]),.btn:active,[role=button]:active{transform:scale(.
   }
   /** Press and hold an event in a list (Month view, all-day row) and drop it on a date. Near the screen edge it flips to the next/previous month (or week). */
   function carryEvent(el, ev) {
+    if (ev && ev.ext) return;
     var timer = null, x0 = 0, y0 = 0, moved = false, ghost = null, gx = 0, gy = 0, flipT = null, flipDir = 0, down = false;
     el.addEventListener('pointerdown', function (e) {
       if (e.button) return;
@@ -1674,6 +1725,7 @@ button:active:not([disabled]),.btn:active,[role=button]:active{transform:scale(.
 
   /** Long-press (touch) or drag (mouse) moves an event; the bottom handle changes its length. 15-minute steps. */
   function dragEvent(el, ev, day, grid) {
+    if (ev && ev.ext) { el.onclick = function () { extInfo(ev); }; return; }
     var mode = null, y0 = 0, top0 = 0, h0 = 0, timer = null, moved = false, startT = 0, tip = null, pid = null, scroll0 = 0;
     function snap(px) { return Math.round(px / (HOUR / 4)) * (HOUR / 4); }
     function minsOf(px) { return Math.round(px / HOUR * 60); }
@@ -1799,6 +1851,7 @@ button:active:not([disabled]),.btn:active,[role=button]:active{transform:scale(.
   $('ev-rep').onchange = $('ev-endrep').onchange = validate;
 
   function openEditor(ev, start) {
+    if (ev && ev.ext) { extInfo(ev); return; }
     ED = { ev: ev || null, color: (ev && ev.color) || 'blue', tag: (ev && ev.tag) || '', tagTouched: false };
     var s = ev ? new Date(ev.start) : new Date(start || Date.now()), e = ev ? new Date(ev.end) : new Date(s.getTime() + 3600e3);
     var allDay = !!(ev && ev.allDay);
