@@ -422,6 +422,7 @@ html.tod-night{--g1:#3a6fd1;--g2:#7b6cd9;--g3:#2f8f7f}
 html.on-notes #nt-new,html.on-home #h-new{display:flex}
 html.standalone .fabl{position:absolute}
 /* dates found in a note */
+.xnote{margin:0 4px 12px;font-size:13px;color:var(--m);line-height:1.35}
 .ndt{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:10px;padding:9px 10px;border-radius:14px;background:color-mix(in srgb,var(--s) 70%,transparent);border:1px solid var(--gb)}
 .ndt .ic{flex:none;width:30px;height:30px;border-radius:10px;display:grid;place-items:center;background:var(--a);color:var(--ona)}
 .ndt .ic svg{width:17px;height:17px}
@@ -773,6 +774,7 @@ html.lk-cl.t-light .blk,html.lk-cl.t-light .card,html.lk-cl.t-light .nt,html.lk-
 <div class="sheet" id="s-ev" role="dialog" aria-label="Event">
   <div class="grab"></div>
   <div class="edhead"><button id="ev-cancel">Cancel</button><h2 id="ev-h">New Event</h2><button class="go" id="ev-save">Add</button></div>
+  <p id="ev-xnote" class="xnote" hidden></p>
   <div class="grp"><div><input type="text" id="ev-title" placeholder="Title" aria-label="Title"></div><div><input type="text" id="ev-loc" placeholder="Location" aria-label="Location"></div></div>
   <div class="grp">
     <div><label for="ev-allday">All-day</label><button class="sw2" id="ev-allday" role="switch" aria-checked="false"></button></div>
@@ -2026,7 +2028,6 @@ html.lk-cl.t-light .blk,html.lk-cl.t-light .card,html.lk-cl.t-light .nt,html.lk-
   }
   /** Press and hold an event in a list (Month view, all-day row) and drop it on a date. Near the screen edge it flips to the next/previous month (or week). */
   function carryEvent(el, ev) {
-    if (ev && ev.ext) return;
     var timer = null, x0 = 0, y0 = 0, moved = false, ghost = null, gx = 0, gy = 0, flipT = null, flipDir = 0, down = false;
     el.addEventListener('pointerdown', function (e) {
       if (e.button) return;
@@ -2073,7 +2074,6 @@ html.lk-cl.t-light .blk,html.lk-cl.t-light .card,html.lk-cl.t-light .nt,html.lk-
 
   /** Long-press (touch) or drag (mouse) moves an event; the bottom handle changes its length. 15-minute steps. */
   function dragEvent(el, ev, day, grid) {
-    if (ev && ev.ext) { el.onclick = function () { extInfo(ev); }; return; }
     var mode = null, y0 = 0, top0 = 0, h0 = 0, timer = null, moved = false, startT = 0, tip = null, pid = null, scroll0 = 0;
     function snap(px) { return Math.round(px / (HOUR / 4)) * (HOUR / 4); }
     function minsOf(px) { return Math.round(px / HOUR * 60); }
@@ -2199,7 +2199,6 @@ html.lk-cl.t-light .blk,html.lk-cl.t-light .card,html.lk-cl.t-light .nt,html.lk-
   $('ev-rep').onchange = $('ev-endrep').onchange = validate;
 
   function openEditor(ev, start) {
-    if (ev && ev.ext) { extInfo(ev); return; }
     ED = { ev: ev || null, color: (ev && ev.color) || 'blue', tag: (ev && ev.tag) || '', tagTouched: false };
     var s = ev ? new Date(ev.start) : new Date(start || Date.now()), e = ev ? new Date(ev.end) : new Date(s.getTime() + 3600e3);
     var allDay = !!(ev && ev.allDay);
@@ -2215,6 +2214,8 @@ html.lk-cl.t-light .blk,html.lk-cl.t-light .card,html.lk-cl.t-light .nt,html.lk-
     $('ev-alert').value = ev ? (ev.alert === '' ? '' : String(ev.alert)) : '';
     $('ev-notes').value = ev ? ev.notes || '' : '';
     $('ev-del').hidden = !ev;
+    $('ev-xnote').hidden = !(ev && ev.ext);
+    if (ev && ev.ext) $('ev-xnote').textContent = 'From your Apple calendar' + (ev.cal ? ' “' + ev.cal + '”' : '') + '. When you save, it becomes your own event in this app and the Apple copy is hidden here.';
     setColor(ED.color); setTag(ED.tag); setAllDay(allDay);
     openSheet('s-ev');
     if (!ev) setTimeout(function () { $('ev-title').focus(); }, 260);
