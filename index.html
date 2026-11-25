@@ -652,6 +652,22 @@ html.lk-cl.t-light .blk,html.lk-cl.t-light .card,html.lk-cl.t-light .nt,html.lk-
 @media(prefers-reduced-motion:reduce){.bub>i.panda{animation:none!important}}
 /* sheets follow the finger when pulled down */
 .sheet.drag{transition:none!important}
+
+/* compact header: one-line greeting, focus beside calendar + settings, wake + level beside the month */
+.top h1,html.lk-cl .top h1{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:clip}
+.top .r{flex:none}
+.ib.fbtn{width:auto;padding:0 13px;display:flex;gap:5px;align-items:center;font-size:14px;font-weight:600;border-radius:22px!important}
+.ib.fbtn svg{width:17px;height:17px}
+.ib.fbtn[aria-pressed=true],html.lk-cl .ib.fbtn[aria-pressed=true]{background:var(--p)!important;color:#fff!important}
+.wkl{display:flex;align-items:center;gap:6px;min-width:0;flex-wrap:wrap}
+.wkl .pill{font-size:12px;padding:3px 9px;text-transform:none;letter-spacing:0;min-height:0}
+.wkl .pill svg{width:13px;height:13px}
+html.lk-cl .wk i.no,.wk i.no{background:transparent!important}
+.wk .ps:not(.sel){opacity:.42}
+.wk .we:not(.sel),.wk .we:not(.sel) b,html.lk-cl .wk .we:not(.sel),html.lk-cl .wk .we:not(.sel) b{color:var(--v)}
+.lane.ads .q{display:flex;gap:8px}
+.adl{display:block;padding:8px 2px;font-size:14px;color:var(--m);border-top:1px solid var(--ln);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.adl b{color:var(--t);font-weight:600}
 </style>
 </head>
 <body>
@@ -660,9 +676,9 @@ html.lk-cl.t-light .blk,html.lk-cl.t-light .card,html.lk-cl.t-light .nt,html.lk-
 
   <!-- ================= HOME ================= -->
   <section class="view on" id="v-home" aria-label="Home">
-    <div class="top"><h1 id="hello">Hi!</h1><div class="r"><span class="pill woke" id="h-woke" hidden></span><span class="pill" id="h-lvl">Lv 1</span>
+    <div class="top"><h1 id="hello">Hi!</h1><div class="r"><button class="ib fbtn" id="nb-focus" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/></svg>Focus</button>
       <button class="ib" id="b-cal" aria-label="Open calendar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4.5" width="18" height="16.5" rx="3"/><path d="M3 9.5h18M8 2.5v4M16 2.5v4"/><path d="M7.5 13.5h2M11 13.5h2M14.5 13.5h2M7.5 17h2M11 17h2"/></svg></button><button class="ib" id="b-settings" aria-label="Settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3h0a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8v0a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button></div></div>
-    <div class="wkh"><span id="h-month"></span><div class="nav"><button id="wk-prev" aria-label="Previous week"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="m15 6-6 6 6 6"/></svg></button><button id="wk-next" aria-label="Next week"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="m9 6 6 6-6 6"/></svg></button></div></div>
+    <div class="wkh"><div class="wkl"><span id="h-month"></span><span class="pill woke" id="h-woke" hidden></span><span class="pill" id="h-lvl">Lv 1</span></div><div class="nav"><button id="wk-prev" aria-label="Previous week"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="m15 6-6 6 6 6"/></svg></button><button id="wk-next" aria-label="Next week"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="m9 6 6 6-6 6"/></svg></button></div></div>
     <div class="wk" id="h-week"></div>
     <div class="bub" id="h-bub" hidden><i class="panda" id="h-panda"></i><p id="h-buddy"></p></div>
     <div id="h-blocks"><div class="skel"></div><div class="skel"></div><div class="skel"></div></div>
@@ -763,8 +779,8 @@ html.lk-cl.t-light .blk,html.lk-cl.t-light .card,html.lk-cl.t-light .nt,html.lk-
   <div class="set-sec"><h3>Date finder tester</h3><p class="small">Paste any text to see which dates it finds. Changes nothing.</p>
     <textarea id="st-df" style="min-height:70px" placeholder="Meeting next Tuesday at 3pm"></textarea>
     <div style="margin-top:8px"><button class="btn g sm" id="st-dfgo">Find dates</button></div><div class="dfres" id="st-dfres"></div></div>
-  <div class="set-sec"><h3>Alerts</h3><p class="small">Events with an alert pop up here while the app is open. Email alerts also reach you when it's closed.</p>
-    <div class="grp"><div><span style="flex:1">Also email me alerts</span><button class="sw2" id="st-mail" role="switch" aria-checked="false" aria-label="Also email me alerts"></button></div></div>
+  <div class="set-sec"><h3>Alerts</h3><p class="small">Reminders and events pop up at their time while the app is open. Turn on email alerts to be told even when the app is closed: an email arrives at the exact minute, and your mail app shows it as a notification.</p>
+    <div class="grp"><div><span style="flex:1">Email me at the time (works when the app is closed)</span><button class="sw2" id="st-mail" role="switch" aria-checked="false" aria-label="Also email me alerts"></button></div></div>
     <div style="margin-top:8px"><button class="btn g sm" id="st-notif">Allow phone notifications</button></div></div>
   <div class="set-sec"><h3>Connection</h3><div class="small" id="st-status">Loading…</div></div>
   <div style="margin-top:18px"><button class="btn g" id="st-close" style="width:100%">Close</button></div>
@@ -942,7 +958,11 @@ html.lk-cl.t-light .blk,html.lk-cl.t-light .card,html.lk-cl.t-light .nt,html.lk-
 
   // ================= HOME =================
   var homeDay = null; // ISO of selected day (null = today)
-  function hello() { var n = store('name'); $('hello').textContent = n ? 'Hi ' + n : 'Hi!'; }
+  function hello() { var n = store('name'); $('hello').textContent = n ? 'Hi ' + n : 'Hi!'; fitHello(); }
+  // keep "Hi name" on one line: shrink the font until it fits next to the buttons
+  function fitHello() { var e = $('hello'); if (!e || !e.clientWidth) return; e.style.fontSize = ''; var f = parseFloat(getComputedStyle(e).fontSize) || 34;
+    while (e.scrollWidth > e.clientWidth + 1 && f > 16) { f -= 1; e.style.fontSize = f + 'px'; } }
+  window.addEventListener('resize', fitHello);
   hello();
   // Home keeps whole weeks on the phone, so tapping another day shows it at once;
   // the week is refreshed in the background and only redrawn if something changed.
@@ -1015,7 +1035,7 @@ html.lk-cl.t-light .blk,html.lk-cl.t-light .card,html.lk-cl.t-light .nt,html.lk-
     }
     if (!txt) return '';
     return '<div class="nextbar" aria-live="polite"><span class="nbt">' + txt + '</span>' +
-      (nx >= 0 ? '<button class="nbf" id="nb-focus" aria-pressed="' + (FOCUS ? 'true' : 'false') + '"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/></svg>Focus</button>' : '') + '</div>' +
+      '</div>' +
       (FOCUS && nx >= 0 ? '<button class="nbshow" id="nb-show">Show everything for a moment</button>' : '');
   }
   function nowMarkHtml(now) { return '<span class="tm nowtm">' + hm(now.toISOString()) + '</span><div class="nowline" aria-hidden="true"></div>'; }
@@ -1081,7 +1101,8 @@ html.lk-cl.t-light .blk,html.lk-cl.t-light .card,html.lk-cl.t-light .nt,html.lk-
         }).catch(function (x) { fail(x); refresh(); });
         return;
       }
-      var p = b.type === 'reminder' ? call('apiCompleteReminder', b.id).then(function () { return { points: 10 }; })
+      if (b.type === 'reminder') { if (remDone[b.id]) return; remDone[b.id] = 1; }
+      var p = b.type === 'reminder' ? call('apiCompleteReminder', b.id).then(function (r) { return { points: r && r.points === 0 ? 0 : 10 }; })
         : b.type === 'routine' ? call('apiRoutineDone', b.key)
         : b.type === 'gift' ? call('apiGiftDone', b.key)
         : call('apiEventDone', b.key);
@@ -1089,14 +1110,15 @@ html.lk-cl.t-light .blk,html.lk-cl.t-light .card,html.lk-cl.t-light .nt,html.lk-
     }
   }
   function renderHome(h) {
+    if (h.isToday && h.blocks) { var cut = Date.now() - 3 * 3600e3; h = Object.assign({}, h, { blocks: h.blocks.filter(function (b) { return !oldBlock(b, cut); }) }); }
     if (h.blocks && GONE_EV.length) h = Object.assign({}, h, { blocks: h.blocks.filter(function (b) { return b.type !== 'event' || !evGone(b); }) });
     if (h.isToday && h.woke !== undefined) showWoke(h.woke);
     var hdir = homeDayShown && homeDayShown !== h.day ? (new Date(h.day) > new Date(homeDayShown) ? 1 : -1) : 0; homeDayShown = h.day;
     $('h-lvl').textContent = 'Lv ' + h.stats.level;
     $('h-month').textContent = new Date(h.week[3].date).toLocaleDateString(LOC, { month: 'long', year: 'numeric' });
     $('h-week').innerHTML = h.week.map(function (d) {
-      var sel = sameDay(d.date, h.day);
-      return '<button data-d="' + esc(d.date) + '" class="' + (sel ? 'sel ' : '') + (d.today ? 'td' : '') + '" aria-label="' + esc(dayName(d.date, { weekday: 'long', day: 'numeric', month: 'long' })) + ', ' + d.count + ' things">' +
+      var sel = sameDay(d.date, h.day), dd = new Date(d.date), wd = dd.getDay(), past = !d.today && dd < d0(new Date());
+      return '<button data-d="' + esc(d.date) + '" class="' + (sel ? 'sel ' : '') + (d.today ? 'td ' : '') + (past ? 'ps ' : '') + (wd === 0 || wd === 6 ? 'we' : '') + '" aria-label="' + esc(dayName(d.date, { weekday: 'long', day: 'numeric', month: 'long' })) + ', ' + d.count + ' things">' +
         esc(dayName(d.date)) + '<b>' + new Date(d.date).getDate() + '</b><i class="' + (d.count ? '' : 'no') + '"></i></button>';
     }).join('');
     [].forEach.call($('h-week').children, function (b) { b.onclick = function () { loadHome(sameDay(b.dataset.d, new Date()) ? null : b.dataset.d); }; });
@@ -1152,7 +1174,8 @@ html.lk-cl.t-light .blk,html.lk-cl.t-light .card,html.lk-cl.t-light .nt,html.lk-
     var byId = {}; h.blocks.forEach(function (b) { if (b.type === 'suggestion') byId[b.id] = b; });
     [].forEach.call($('h-blocks').querySelectorAll('[data-ev]'), function (x) { x.onclick = x.onkeydown = function (k) { if (k.type === 'keydown' && k.key !== 'Enter') return; if (Date.now() - (x._noClick || 0) < 500) return; openEditor(h.blocks[+x.dataset.ev]); }; });
     [].forEach.call($('h-blocks').querySelectorAll('[data-sw]'), function (x) { swipeBlock(x, h.blocks[+x.dataset.sw]); });
-    if ($('nb-focus')) $('nb-focus').onclick = function () { FOCUS = !FOCUS; try { localStorage.setItem('myday_focus', FOCUS ? '1' : ''); } catch (e) {} homeShown = ''; renderHome(h); toast(FOCUS ? 'Focus on: just the next thing' : 'Focus off: showing everything'); var fm = FOCUS && $('h-blocks').querySelector('.focusme'); if (fm && fm.scrollIntoView) fm.scrollIntoView({ block: 'center', behavior: 'smooth' }); };
+    $('nb-focus').setAttribute('aria-pressed', FOCUS ? 'true' : 'false'); fitHello();
+    $('nb-focus').onclick = function () { FOCUS = !FOCUS; this.setAttribute('aria-pressed', FOCUS ? 'true' : 'false'); if (!h.isToday) { toast(FOCUS ? 'Focus on: today shows just the next thing' : 'Focus off'); try { localStorage.setItem('myday_focus', FOCUS ? '1' : ''); } catch (e) {} return; } try { localStorage.setItem('myday_focus', FOCUS ? '1' : ''); } catch (e) {} homeShown = ''; renderHome(h); toast(FOCUS ? 'Focus on: just the next thing' : 'Focus off: showing everything'); var fm = FOCUS && $('h-blocks').querySelector('.focusme'); if (fm && fm.scrollIntoView) fm.scrollIntoView({ block: 'center', behavior: 'smooth' }); };
     if ($('nb-show')) $('nb-show').onclick = function () { var a = $('h-blocks').querySelector('.ag'); if (a) a.classList.toggle('peek'); };
     homeLive = h.isToday ? h : null;
     if (h.isToday && !localStorage.getItem('myday_swtip') && $('h-blocks').querySelector('[data-sw]')) { try { localStorage.setItem('myday_swtip', '1'); } catch (e) {} setTimeout(function () { toast('Tip: swipe a card right to finish it, left to snooze 15 min', { ms: 5000 }); }, 1500); }
@@ -1169,9 +1192,21 @@ html.lk-cl.t-light .blk,html.lk-cl.t-light .card,html.lk-cl.t-light .nt,html.lk-
     [].forEach.call($('h-blocks').querySelectorAll('[data-add]'), function (x) { x.onclick = function () { addSuggestion(byId[x.dataset.add], x); }; });
     [].forEach.call($('h-blocks').querySelectorAll('[data-no]'), function (x) { x.onclick = function () { x.disabled = true; var bl = x.closest('.blk'); if (bl) dust(bl); call('apiDismissSuggestion', x.dataset.no).then(function () { toast('Okay, skipped'); loadHome(); }).catch(fail); }; });
   }
-  function doneReminder(id, btn) {
-    if (btn) { btn.disabled = true; var blk = btn.closest('.blk'); if (blk) { blk.style.transition = 'opacity .3s'; blk.style.opacity = '.3'; } }
-    call('apiCompleteReminder', id).then(function () { xpFly(10); toast('Done. A new leaf grew'); loaders[current](); }).catch(fail);
+  // Done things that ended more than 3 hours ago leave Home (all-day items, reminders and email dates stay)
+  function oldBlock(b, cut) {
+    if (b.allDay || !b.end) return false;
+    if (b.type !== 'event' && b.type !== 'routine') return false;
+    return new Date(b.end).getTime() < cut;
+  }
+  // A reminder counts once: it leaves at once, and more taps on it do nothing.
+  var remDone = {};
+  function doneReminder(id, btn, after) {
+    if (remDone[id]) return; remDone[id] = 1;
+    var blk = btn && (btn.closest('.blk') || btn);
+    if (btn) btn.disabled = true;
+    if (blk) { blk.style.pointerEvents = 'none'; if (blk.classList.contains('blk')) dust(blk); else { blk.style.transition = 'opacity .15s'; blk.style.opacity = '0'; } }
+    call('apiCompleteReminder', id).then(function (r) { if (!r || r.points !== 0) xpFly(10); toast('Done. A new leaf grew'); delete homeDays[dKey(new Date())]; homeShown = ''; if (after) after(); else loaders[current](); })
+      .catch(function (x) { delete remDone[id]; if (blk) { blk.style.pointerEvents = ''; blk.style.opacity = ''; } if (btn) btn.disabled = false; fail(x); });
   }
   function addSuggestion(s, btn) {
     if (btn) { btn.disabled = true; var q = btn.closest('.q'); if (q) q.innerHTML = '<span class="small">Adding…</span>'; }
@@ -1305,6 +1340,7 @@ html.lk-cl.t-light .blk,html.lk-cl.t-light .card,html.lk-cl.t-light .nt,html.lk-
       '<a class="btn o sm" href="' + esc(m.link) + '" target="_blank" rel="noopener">Open</a>' +
       '<button class="btn g sm" data-done="' + esc(m.threadId) + '">Done</button></div></div></div>';
   }
+  var inboxAds = false;
   function renderInbox(r) {
     var n = r.needs.length + r.later.length + r.skip.length;
     $('i-new').textContent = n + ' new';
@@ -1319,10 +1355,20 @@ html.lk-cl.t-light .blk,html.lk-cl.t-light .card,html.lk-cl.t-light .nt,html.lk-
       '<div class="lane" style="--c:var(--c2);--k:var(--k2)"><h3><span><i></i>Read later</span><span class="n">' + r.later.length + '</span></h3>' +
         (later.map(function (m) { return emItem(m, false); }).join('') || '<div class="more">Nothing here.</div>') +
         (r.later.length > later.length ? '<button class="more" id="i-all">Show ' + (r.later.length - later.length) + ' more</button>' : '') + '</div>' +
+      ((r.ads || []).length ? '<div class="lane ads" style="--c:var(--c4);--k:var(--m)"><h3><span><i></i>Ads filtered out</span><span class="n">' + r.ads.length + '</span></h3>' +
+        '<div class="more">Shops, sales and newsletters. They never show up above.</div>' +
+        (inboxAds ? r.ads.map(function (m) { return '<a class="adl" href="' + esc(m.link) + '" target="_blank" rel="noopener"><b>' + esc(m.name) + '</b> ' + esc(m.subject) + '</a>'; }).join('') : '') +
+        '<div class="q"><button class="more" id="i-adshow">' + (inboxAds ? 'Hide them' : 'Show them') + '</button><button class="more" id="i-adsdone">Mark all as read</button></div></div>' : '') +
       '<div class="lane" style="--c:var(--c4);--k:var(--v)"><h3><span><i></i>Can skip</span><span class="n">' + r.skip.length + '</span></h3>' +
         (r.skipGroups.length ? '<div class="chips">' + r.skipGroups.map(function (g) { return '<span>' + esc(g.name) + ' ' + g.count + '</span>'; }).join('') + '</div>' : '<div class="more">Nothing here.</div>') +
         (r.skip.length ? '<button class="more" id="i-skipall">Mark all ' + r.skip.length + ' as done</button>' : '') + '</div>';
     if ($('i-all')) $('i-all').onclick = function () { inboxShowAll = true; renderInbox(r); };
+    if ($('i-adshow')) $('i-adshow').onclick = function () { inboxAds = !inboxAds; renderInbox(r); };
+    if ($('i-adsdone')) $('i-adsdone').onclick = function () {
+      this.disabled = true; this.textContent = 'Marking…';
+      r.ads.reduce(function (p, m) { return p.then(function () { return call('apiEmailDone', m.threadId, true); }); }, Promise.resolve())
+        .then(function () { toast('Ads marked as read'); loadInbox(false); }).catch(fail);
+    };
     if ($('i-skipall')) $('i-skipall').onclick = function () {
       this.disabled = true; this.textContent = 'Marking…';
       r.skip.reduce(function (p, m) { return p.then(function () { return call('apiEmailDone', m.threadId); }); }, Promise.resolve())
@@ -2030,8 +2076,7 @@ html.lk-cl.t-light .blk,html.lk-cl.t-light .card,html.lk-cl.t-light .nt,html.lk-
     [].forEach.call(root.querySelectorAll('[data-key]'), function (b) {
       if (canDrop) carryEvent(b, byKey[b.dataset.key]);
       b.onclick = function () { if (Date.now() - (b._noClick || 0) < 500) return; openEditor(byKey[b.dataset.key]); }; });
-    [].forEach.call(root.querySelectorAll('[data-rem]'), function (b) { b.onclick = function () {
-      b.style.opacity = '.4'; call('apiCompleteReminder', b.dataset.rem).then(function () { xpFly(10); toast('Reminder done'); calRefresh(); }).catch(fail); }; });
+    [].forEach.call(root.querySelectorAll('[data-rem]'), function (b) { b.onclick = function () { doneReminder(b.dataset.rem, b, calRefresh); }; });
   }
 
   // ---- Month ----
@@ -2108,8 +2153,7 @@ html.lk-cl.t-light .blk,html.lk-cl.t-light .card,html.lk-cl.t-light .nt,html.lk-
     [].forEach.call($('cal-body').querySelectorAll('.dstrip button'), function (b) { b.onclick = function () { var a = b.dataset.d.split('-'); CAL.date = new Date(+a[0], +a[1] - 1, +a[2]); calRender(); }; });
     var byKey = {}; x.events.forEach(function (e) { byKey[e.key] = e; });
     [].forEach.call($('cal-body').querySelectorAll('.allday [data-key]'), function (b) { carryEvent(b, byKey[b.dataset.key]); b.onclick = function () { if (Date.now() - (b._noClick || 0) < 500) return; openEditor(byKey[b.dataset.key]); }; });
-    [].forEach.call($('cal-body').querySelectorAll('.remrow [data-rem]'), function (b) { b.onclick = function () {
-      b.style.opacity = '.4'; call('apiCompleteReminder', b.dataset.rem).then(function () { xpFly(10); toast('Reminder done'); calRefresh(); }).catch(fail); }; });
+    [].forEach.call($('cal-body').querySelectorAll('.remrow [data-rem]'), function (b) { b.onclick = function () { doneReminder(b.dataset.rem, b, calRefresh); }; });
     var grid = $('dgrid');
     // scroll to now (today) or to 7:00
     var focusH = sameDay(d, now) ? Math.max(0, now.getHours() - 1) : 7;
@@ -2395,7 +2439,11 @@ html.lk-cl.t-light .blk,html.lk-cl.t-light .card,html.lk-cl.t-light .nt,html.lk-
     $('al-s').textContent = a.kind === 'snooze' ? 'Snoozed · back now' : a.kind === 'routine' ? 'Morning routine · now' : a.kind === 'reminder' ? 'Reminder · now' : (a.allDay ? 'Today' : (new Date(a.start) <= new Date() ? 'Now' : 'At ' + hm(a.start))) + (a.location ? ' · ' + a.location : '');
     $('alertb').classList.add('on');
     if (navigator.vibrate) try { navigator.vibrate([200, 100, 200]); } catch (e) {}
-    try { if (window.Notification && Notification.permission === 'granted') new Notification(a.title, { body: $('al-s').textContent }); } catch (e) {}
+    try { if (window.Notification && Notification.permission === 'granted') {
+      var body = $('al-s').textContent, opts = { body: body, tag: a.key, icon: 'icon-192.png', badge: 'icon-192.png' };
+      if (navigator.serviceWorker && navigator.serviceWorker.controller) navigator.serviceWorker.ready.then(function (r) { return r.showNotification(a.title, opts); }).catch(function () { try { new Notification(a.title, opts); } catch (e) {} });
+      else new Notification(a.title, opts);
+    } } catch (e) {}
   }
   $('al-ok').onclick = function () { $('alertb').classList.remove('on'); };
   $('al-open').onclick = function () {
