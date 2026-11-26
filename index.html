@@ -247,6 +247,10 @@ label.f{display:block;font-size:14px;color:var(--m);margin:12px 0 5px}
 .rmq{display:flex;gap:8px;margin:0 0 12px;overflow-x:auto;scrollbar-width:none}.rmq::-webkit-scrollbar{display:none}
 .rmq button{flex:none;border:0;border-radius:999px;padding:9px 14px;font:inherit;font-size:14px;font-weight:600;background:var(--s2);color:var(--t);min-height:38px}
 .rmq button[aria-pressed=true]{background:var(--a);color:var(--ona)}
+.pushask{display:flex;align-items:center;gap:10px;padding:12px 12px 12px 14px;border-radius:18px;margin:0 0 12px;background:var(--glass);border:1px solid var(--gb)}
+.pushask .pi{flex:none;width:34px;height:34px;border-radius:11px;background:var(--a);color:var(--ona);display:grid;place-items:center}.pushask .pi svg{width:19px;height:19px}
+.pushask>div{flex:1;min-width:0}.pushask b{display:block;font-size:15px;font-weight:600}.pushask small{display:block;font-size:13px;color:var(--m)}
+.pushask .x{flex:none;width:30px;height:30px;border-radius:9px;color:var(--m);display:grid;place-items:center}.pushask .x svg{width:16px;height:16px}
 .rmhint{margin:-4px 2px 0;font-size:13px;color:var(--m);min-height:18px}
 .nt.edit{display:block}.nt textarea.nted{width:100%;background:transparent;border:0;padding:0;margin:0;font-size:15px;line-height:1.45;min-height:80px;resize:none;color:var(--t);outline:none;overflow:hidden}
 .nt textarea.nted:focus{border:0}
@@ -769,6 +773,7 @@ button,.btn,.ib,.blk,.em,.nt,.lane h3,.wk button,.lev,.gev{transition:transform 
     <div class="wkh"><div class="wkl"><span id="h-month"></span><span class="pill woke" id="h-woke" hidden></span><span class="pill" id="h-lvl">Lv 1</span></div><div class="nav"><button id="wk-prev" aria-label="Previous week"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="m15 6-6 6 6 6"/></svg></button><button id="wk-next" aria-label="Next week"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="m9 6 6 6-6 6"/></svg></button></div></div>
     <div class="wk" id="h-week"></div>
     <div class="bub" id="h-bub" hidden><i class="panda" id="h-panda"></i><p id="h-buddy" role="button" tabindex="0" aria-expanded="false"></p></div>
+    <div class="pushask" id="h-push" hidden><span class="pi" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 8 3 8H3s3-1 3-8"/><path d="M10.3 20a1.9 1.9 0 0 0 3.4 0"/></svg></span><div><b>Get a buzz for every event and reminder</b><small id="h-pushs">Even when the app is closed.</small></div><button class="btn a sm" id="h-pushgo">Turn on</button><button class="x" id="h-pushx" aria-label="Not now"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>
     <div id="h-blocks"><div class="skel"></div><div class="skel"></div><div class="skel"></div></div>
   </section>
 
@@ -880,9 +885,10 @@ button,.btn,.ib,.blk,.em,.nt,.lane h3,.wk button,.lev,.gev{transition:transform 
   <div class="set-sec"><h3>Date finder tester</h3><p class="small">Paste any text to see which dates it finds. Changes nothing.</p>
     <textarea id="st-df" style="min-height:70px" placeholder="Meeting next Tuesday at 3pm"></textarea>
     <div style="margin-top:8px"><button class="btn g sm" id="st-dfgo">Find dates</button></div><div class="dfres" id="st-dfres"></div></div>
-  <div class="set-sec"><h3>Alerts</h3><p class="small">Reminders and events pop up at their time while the app is open. Turn on email alerts to be told even when the app is closed: an email arrives at the exact minute, and your mail app shows it as a notification.</p>
-    <div class="grp"><div><span style="flex:1">Email me at the time (works when the app is closed)</span><button class="sw2" id="st-mail" role="switch" aria-checked="false" aria-label="Also email me alerts"></button></div></div>
-    <div style="margin-top:8px"><button class="btn g sm" id="st-notif">Allow phone notifications</button></div></div>
+  <div class="set-sec"><h3>Notifications</h3><p class="small" id="st-pushs">Your phone buzzes at the time of every event and reminder, even when the app is closed.</p>
+    <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap"><button class="btn a sm" id="st-push">Turn on notifications</button><button class="btn g sm" id="st-pushtest" hidden>Send a test</button></div>
+    <div class="grp" style="margin-top:12px"><div><span style="flex:1">Also email me at the time</span><button class="sw2" id="st-mail" role="switch" aria-checked="false" aria-label="Also email me alerts"></button></div></div>
+    <button id="st-notif" hidden></button></div>
   <div class="set-sec"><h3>Connection</h3><div class="small" id="st-status">Loading…</div></div>
   <div style="margin-top:18px"><button class="btn g" id="st-close" style="width:100%">Close</button></div>
 </div>
@@ -919,7 +925,7 @@ button,.btn,.ib,.blk,.em,.nt,.lane h3,.wk button,.lev,.gev{transition:transform 
     <div id="ev-endrep-row"><label for="ev-endrep">End Repeat</label><select id="ev-endrep"><option value="never">Never</option><option value="on">On Date</option></select><input type="date" id="ev-until" aria-label="End repeat date"></div>
   </div>
   <div class="grp">
-    <div><label for="ev-alert">Alert</label><select id="ev-alert"><option value="">None</option><option value="0">At time of event</option><option value="5">5 minutes before</option><option value="10">10 minutes before</option><option value="15">15 minutes before</option><option value="30">30 minutes before</option><option value="60">1 hour before</option><option value="120">2 hours before</option><option value="1440">1 day before</option><option value="2880">2 days before</option><option value="10080">1 week before</option></select></div>
+    <div><label for="ev-alert">Alert</label><select id="ev-alert"><option value="">At time of event</option><option value="off">None</option><option value="5">5 minutes before</option><option value="10">10 minutes before</option><option value="15">15 minutes before</option><option value="30">30 minutes before</option><option value="60">1 hour before</option><option value="120">2 hours before</option><option value="1440">1 day before</option><option value="2880">2 days before</option><option value="10080">1 week before</option></select></div>
     <div><label>Colour</label><div class="cols" id="ev-cols"></div></div>
     <div class="tagrow"><label>Tag</label><div class="tags" id="ev-tags"><button data-t="" aria-pressed="true">None</button><button data-t="birthday" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21h16M5 21v-7a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v7"/><path d="M5 16c2 1.5 4 1.5 7 0s5-1.5 7 0"/><path d="M12 12V8"/><path d="M12 3.5c1 1.2 1 2.3 0 3-1-.7-1-1.8 0-3z"/></svg>Birthday</button><button data-t="holiday" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="8" width="18" height="4" rx="1"/><path d="M5 12v9h14v-9M12 8v13"/><path d="M12 8c-1.5-3-5-4-5.5-2S9 8 12 8zM12 8c1.5-3 5-4 5.5-2S15 8 12 8z"/></svg>Holiday</button></div><small class="taghint" id="ev-taghint" hidden>You'll be reminded a week before to get a present, and every day after until it's done.</small></div>
   </div>
@@ -2477,8 +2483,61 @@ function apiParseSpoken(text) {
     var on = $('st-mail').getAttribute('aria-checked') !== 'true'; $('st-mail').setAttribute('aria-checked', on);
     call('apiEmailAlerts', on).then(function () { toast(on ? 'Email alerts on' : 'Email alerts off'); }).catch(function (e) { $('st-mail').setAttribute('aria-checked', !on); fail(e); });
   };
-  $('st-notif').hidden = !window.Notification || Notification.permission === 'granted';
-  $('st-notif').onclick = function () { try { Notification.requestPermission().then(function (p) { $('st-notif').hidden = p === 'granted'; toast(p === 'granted' ? 'Notifications on' : 'Notifications not allowed'); }); } catch (e) { toast('This browser can\'t show notifications'); } };
+  // ---- Phone notifications (real push: they arrive even when the app is closed) ----
+  function pushCan() { return 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window && location.protocol === 'https:' && !/(^|\.)google(usercontent)?\.com$/.test(location.hostname); }
+  function standalone() { return navigator.standalone === true || !!(window.matchMedia && matchMedia('(display-mode: standalone)').matches); }
+  function iOS() { return /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1); }
+  function pushIsOn() { return store('myday_push') === '1' && window.Notification && Notification.permission === 'granted'; }
+  function u8(b64) { var s = atob(String(b64).replace(/-/g, '+').replace(/_/g, '/') + '==='.slice((b64.length + 3) % 4)), a = new Uint8Array(s.length); for (var i = 0; i < s.length; i++) a[i] = s.charCodeAt(i); return a; }
+  function deviceName() { var u = navigator.userAgent; return /iPhone/.test(u) ? 'iPhone' : /iPad/.test(u) ? 'iPad' : /Android/.test(u) ? 'Android' : /Mac/.test(u) ? 'Mac' : 'Browser'; }
+  function pushWhyNot() {
+    if (iOS() && !standalone()) return 'On iPhone, notifications only work in the app on your Home Screen. In Safari tap Share, then "Add to Home Screen", and open it from there.';
+    if (!pushCan()) return 'Notifications only work in the phone app (the Home Screen version), not inside Google.';
+    if (Notification.permission === 'denied') return 'Notifications are blocked. Turn them on in iPhone Settings > Notifications > My day.';
+    return '';
+  }
+  function pushUi() {
+    var on = pushIsOn(), why = pushWhyNot();
+    $('st-push').textContent = on ? 'Notifications are on' : 'Turn on notifications'; $('st-push').disabled = on;
+    $('st-pushtest').hidden = !on;
+    $('st-pushs').textContent = on ? 'This phone buzzes at the time of every event and reminder, even when the app is closed. Pick "None" as an event\'s alert to keep it quiet.' : (why || 'Your phone buzzes at the time of every event and reminder, even when the app is closed.');
+    $('h-push').hidden = on || store('myday_pushx') === '1' || (!pushCan() && !(iOS() && !standalone()));
+    if (!$('h-push').hidden && iOS() && !standalone()) $('h-pushs').textContent = 'Add the app to your Home Screen first: Share > Add to Home Screen.';
+  }
+  /** Must run straight from a tap: iPhone only asks for permission inside a tap. */
+  function pushOn(btn) {
+    var why = pushWhyNot(); if (why) { toast(why, { err: true, ms: 8000 }); return; }
+    if (btn) btn.disabled = true;
+    var perm;
+    try { perm = Notification.requestPermission(); } catch (e) { perm = null; }
+    Promise.resolve(perm).then(function (p) {
+      p = p || Notification.permission;
+      if (p !== 'granted') throw new Error(p === 'denied' ? 'Notifications are blocked. Turn them on in iPhone Settings > Notifications > My day.' : 'Notifications were not allowed');
+      return pushSubscribe(true);
+    }).then(function () {
+      store('myday_push', '1'); pushUi(); if (btn) btn.disabled = pushIsOn();
+      return call('apiPushTest');
+    }).then(function (r) {
+      toast(r.sent ? 'Notifications on. A test one is on its way.' : 'Turned on, but the test didn\'t arrive: ' + r.error, { err: !r.sent, ms: 6000 });
+    }).catch(function (e) { if (btn) btn.disabled = false; pushUi(); toast(e && e.message ? e.message : String(e), { err: true, ms: 7000 }); });
+  }
+  function pushSubscribe(force) {
+    return Promise.all([navigator.serviceWorker.ready, call('apiPushKey')]).then(function (x) {
+      var reg = x[0], key = x[1];
+      return reg.pushManager.getSubscription().then(function (old) {
+        if (old && !force) return old;
+        if (old) { var k = old.options && old.options.applicationServerKey; if (k && btoa(String.fromCharCode.apply(null, new Uint8Array(k))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '') !== key) return old.unsubscribe().then(function () { return null; }); return old; }
+        return null;
+      }).then(function (sub) { return sub || reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: u8(key) }); });
+    }).then(function (sub) { store('myday_pushd', new Date().toDateString()); return call('apiPushSubscribe', sub.toJSON(), deviceName()); });
+  }
+  $('st-push').onclick = function () { pushOn(this); };
+  $('h-pushgo').onclick = function () { pushOn(this); };
+  $('h-pushx').onclick = function () { store('myday_pushx', '1'); $('h-push').hidden = true; toast('You can turn them on later in Settings'); };
+  $('st-pushtest').onclick = function () { call('apiPushTest').then(function (r) { toast(r.sent ? 'Test sent. It should arrive in a few seconds.' : 'It didn\'t go through: ' + r.error, { err: !r.sent, ms: 6000 }); }).catch(fail); };
+  pushUi();
+  // keep this phone's subscription fresh (phones sometimes renew it), once a day
+  if (pushIsOn() && pushCan() && store('myday_pushd') !== new Date().toDateString()) setTimeout(function () { pushSubscribe(false).catch(function () {}); }, 4000);
   function imUp(btn) {
     if (btn) btn.disabled = true;
     var at = new Date().toISOString(); wokeLocalT = Date.now(); showWoke(at); toast('Good morning! Planning your routine…');
@@ -3092,7 +3151,7 @@ function apiParseSpoken(text) {
     $('ev-rep').value = ev ? ev.repeat || 'none' : 'none';
     $('ev-endrep').value = ev && ev.repeatUntil ? 'on' : 'never';
     $('ev-until').value = ev && ev.repeatUntil ? dateVal(new Date(ev.repeatUntil)) : dateVal(addD(s, 28));
-    $('ev-alert').value = ev ? (ev.alert === '' ? '' : String(ev.alert)) : '';
+    $('ev-alert').value = ev ? (ev.alert === '' || String(ev.alert) === '0' ? '' : String(ev.alert)) : '';
     $('ev-notes').value = ev ? ev.notes || '' : '';
     $('ev-del').hidden = !ev;
     $('ev-xnote').hidden = !(ev && ev.ext);
@@ -3167,7 +3226,7 @@ function apiParseSpoken(text) {
     $('al-s').textContent = a.kind === 'snooze' ? 'Snoozed · back now' : a.kind === 'routine' ? 'Morning routine · now' : a.kind === 'reminder' ? 'Reminder · now' : (a.allDay ? 'Today' : (new Date(a.start) <= new Date() ? 'Now' : 'At ' + hm(a.start))) + (a.location ? ' · ' + a.location : '');
     $('alertb').classList.add('on');
     if (navigator.vibrate) try { navigator.vibrate([200, 100, 200]); } catch (e) {}
-    try { if (window.Notification && Notification.permission === 'granted') {
+    try { if (window.Notification && Notification.permission === 'granted' && !pushIsOn()) {
       var body = $('al-s').textContent, opts = { body: body, tag: a.key, icon: 'icon-192.png', badge: 'icon-192.png' };
       if (navigator.serviceWorker && navigator.serviceWorker.controller) navigator.serviceWorker.ready.then(function (r) { return r.showNotification(a.title, opts); }).catch(function () { try { new Notification(a.title, opts); } catch (e) {} });
       else new Notification(a.title, opts);
