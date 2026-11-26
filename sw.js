@@ -1,5 +1,5 @@
 // Opens the app instantly from the phone's copy, and fetches the newest version in the background.
-var CACHE = 'myday-v31';
+var CACHE = 'myday-v32';
 self.addEventListener('install', function (e) { self.skipWaiting(); });
 self.addEventListener('activate', function (e) {
   e.waitUntil(caches.keys().then(function (ks) { return Promise.all(ks.filter(function (k) { return k !== CACHE; }).map(function (k) { return caches.delete(k); })); }).then(function () { return self.clients.claim(); }));
@@ -24,11 +24,12 @@ self.addEventListener('push', function (e) {
     timestamp: d.ts || Date.now(), data: { url: d.url || './' }
   }));
 });
-// Tapping a reminder notification opens the app.
+// Tapping a notification opens the app (at the wrap-up, review, packages… when the notification says so).
 self.addEventListener('notificationclick', function (e) {
   e.notification.close();
+  var url = (e.notification.data && e.notification.data.url) || './', what = (String(url).match(/open=(\w+)/) || [])[1] || '';
   e.waitUntil(self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(function (ws) {
-    for (var i = 0; i < ws.length; i++) if ('focus' in ws[i]) return ws[i].focus();
-    return self.clients.openWindow('./');
+    for (var i = 0; i < ws.length; i++) if ('focus' in ws[i]) { if (what) ws[i].postMessage({ open: what }); return ws[i].focus(); }
+    return self.clients.openWindow(url);
   }));
 });
