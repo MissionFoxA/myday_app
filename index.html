@@ -789,6 +789,53 @@ button,.btn,.ib,.blk,.em,.nt,.lane h3,.wk button,.lev,.gev{transition:transform 
 .grem .gc{flex:none;width:15px;height:15px;border-radius:50%;border:2px solid var(--wilt)}
 .grem .gt{flex:none;color:var(--m);font-weight:500}
 .grem .gx{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* ================= FOCUS ================= */
+.fpick{display:flex;flex-direction:column;gap:8px;margin-top:4px}
+.fsub{margin:0 2px 2px;color:var(--m);font-size:14.5px}
+.ftoday{font-size:13.5px;color:var(--m);padding:0 2px 4px}.ftoday b{color:var(--t)}
+.fbig,.frow{display:flex;flex-direction:column;align-items:flex-start;text-align:left;gap:2px;border-radius:18px;padding:12px 14px;background:var(--glass);border:1px solid var(--gb);color:var(--t);width:100%}
+.fbig{padding:18px;border-radius:24px;border:1.5px solid var(--a);gap:4px}
+.fbig small{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--a)}
+.fbig b{font-size:21px;line-height:1.2}.frow b{font-size:15.5px;font-weight:600}
+.fbig span,.frow span{font-size:13px;color:var(--m)}
+.fbig i{font-style:normal;margin-top:10px;background:var(--a);color:var(--ona);border-radius:12px;padding:7px 14px;font-weight:700;font-size:14px}
+.fother{display:flex;gap:8px;margin-top:6px}
+.fother input,.fadd input{flex:1;min-width:0;background:var(--s2);border:1px solid var(--ln);color:var(--t);border-radius:14px;padding:10px 12px;font:inherit;font-size:15px}
+.frun,.fdone{display:flex;flex-direction:column;gap:12px;margin-top:2px}
+.ftask small,.fstep small,.fnext small{display:block;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--m)}
+.ftask b{display:block;font-size:22px;line-height:1.2;margin-top:2px}.ftask a{display:inline-block;margin-top:6px;color:var(--p);font-size:14px;font-weight:600}
+.fring{position:relative;width:164px;height:164px;margin:0 auto}
+.fring svg{width:100%;height:100%;transform:rotate(-90deg)}
+.fring circle{fill:none;stroke-width:8}.fring .t{stroke:var(--s2)}.fring .v{stroke:var(--a);stroke-linecap:round;transition:stroke-dashoffset 1s linear}
+.fring.over .v{stroke:var(--p)}
+.fring>div{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.fring b{font-size:36px;font-variant-numeric:tabular-nums;font-weight:700}.fring span{font-size:13px;color:var(--m)}
+.fring.sm{width:150px;height:110px}
+.fchips{display:flex;gap:6px;justify-content:center;flex-wrap:wrap}
+.fchips button{border-radius:999px;padding:6px 12px;font-size:13.5px;font-weight:600;background:var(--s2);color:var(--t)}
+.fchips button.on{background:var(--a);color:var(--ona)}
+.fup{border-radius:18px;padding:12px 14px;background:color-mix(in srgb,var(--p) 18%,transparent);text-align:center}
+.fup[hidden]{display:none}
+.fup b{display:block;font-size:17px;margin-bottom:8px}.fup div{display:flex;gap:6px;justify-content:center;flex-wrap:wrap}
+.fstep{border-radius:22px;padding:14px 16px;background:var(--glass);border:1px solid var(--gb)}
+.fstep p{margin:4px 0 10px;font-size:18px;font-weight:600;line-height:1.3}.fstep p.fq{font-weight:500;color:var(--m);font-size:16px}
+.fsacts{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px}
+.frun{gap:10px}
+.fall{color:var(--p);font-size:14px;font-weight:600;padding:2px 0}
+.fadd{display:flex;gap:6px}.fadd button{width:42px;border-radius:14px;background:var(--s2);color:var(--t);font-size:22px;font-weight:600}
+.fsteps{margin:10px 0 0;padding-left:20px;font-size:14px;color:var(--m)}
+.fsteps li{margin:3px 0}.fsteps li.d{text-decoration:line-through;opacity:.6}.fsteps li.c{color:var(--t);font-weight:600}
+.fpanda{display:flex;align-items:center;gap:10px}
+.fpanda .pw,.fdone .pw{width:62px;height:62px;flex:none;display:block}.fpanda .pw svg,.fdone .pw svg{width:100%;height:100%}
+.fpanda p{margin:0;background:var(--s2);border-radius:16px 16px 16px 4px;padding:9px 12px;font-size:14.5px}
+.fbar{display:flex;gap:8px}.fbar .btn{flex:1}
+.fdone{align-items:center;text-align:center;padding-top:10px}
+.fdone .pw{width:96px;height:96px}
+.fdone h2{margin:0;font-size:28px}.fdone>p{margin:0;color:var(--m);font-size:16px}
+.fdone .wrstat{width:100%}
+.fnext{width:100%;text-align:left;border-radius:18px;padding:12px 14px;background:var(--glass);border:1px solid var(--gb)}
+.fnext b{display:block;font-size:17px;margin-top:2px}.fnext span{font-size:13px;color:var(--m)}
+.fdone .fbar{width:100%;flex-wrap:wrap}
 </style>
 </head>
 <body>
@@ -808,8 +855,8 @@ button,.btn,.ib,.blk,.em,.nt,.lane h3,.wk button,.lev,.gev{transition:transform 
   </section>
 
   <!-- ================= NOW ================= -->
-  <section class="view" id="v-now" aria-label="Now">
-    <div class="top"><h1>Right now</h1></div>
+  <section class="view" id="v-now" aria-label="Focus">
+    <div class="top"><h1>Focus</h1></div>
     <div class="lvbar" aria-label="Level and XP"><div class="lvt"><b id="n-lvl">Level 1</b><span id="n-xp">0 XP</span><span id="n-woke" class="nwoke" hidden></span><span class="lvl2" id="n-left"></span></div><div class="lvtrack"><i id="n-bar" style="width:0"></i></div></div>
     <div id="n-goals"></div>
     <div id="n-body"><div class="skel" style="height:320px;margin-top:30px"></div></div>
@@ -842,7 +889,7 @@ button,.btn,.ib,.blk,.em,.nt,.lane h3,.wk button,.lev,.gev{transition:transform 
 <button class="fabl" id="nt-new" aria-label="New note"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>Note</button>
 <nav class="tabs"><div class="in">
   <button data-v="home" class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16"/></svg>Home</button>
-  <button data-v="now"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="4" width="14" height="16" rx="3"/></svg>Now</button>
+  <button data-v="now"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="1" fill="currentColor"/></svg>Focus</button>
   <button data-v="inbox"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="m3 8 9 6 9-6"/></svg>Inbox</button>
   <button data-v="notes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 3h10l4 4v14H5z"/><path d="M9 12h6M9 16h4"/></svg>Notes</button>
 </div></nav>
@@ -1477,81 +1524,243 @@ button,.btn,.ib,.blk,.em,.nt,.lane h3,.wk button,.lev,.gev{transition:transform 
   }
   $('b-settings').onclick = function () { openSheet('s-set'); loadSettings(); };
 
-  // ================= NOW =================
-  var nowCards = [];
-  loaders.now = function () { renderGoals(); if (cache.now) renderNow(cache.now); call('apiNow').then(function (r) { if (!busy) { remember('now', r); renderNow(r); } }).catch(fail); };
+  // ================= FOCUS (the Now tab) =================
+  // Pick one thing; the screen shows only that, with a timer, its next small step and the panda.
+  var nowCards = [], busy = false, FKEY = 'myday_focus2', FOC = null, focToday = { todayMin: 0, todayCount: 0 }, focDone = null, focBreak = null, focLine = 0, focAll = false;
+  try { FOC = JSON.parse(localStorage.getItem(FKEY) || 'null'); } catch (e) { FOC = null; }
+  try { focToday = JSON.parse(localStorage.getItem('myday_focus_today') || 'null') || focToday; } catch (e) { /* keep zero */ }
+  if (focToday.date && focToday.date !== new Date().toDateString()) focToday = { todayMin: 0, todayCount: 0 };
+  function focSave() { try { if (FOC) localStorage.setItem(FKEY, JSON.stringify(FOC)); else localStorage.removeItem(FKEY); } catch (e) { /* private mode */ } }
+  function focKeepToday(t) { focToday = { todayMin: t.todayMin || 0, todayCount: t.todayCount || 0, date: new Date().toDateString() }; try { localStorage.setItem('myday_focus_today', JSON.stringify(focToday)); } catch (e) { /* ok */ } }
+  function quiet() { /* the Google side may not have this yet: the phone keeps working without it */ }
+  loaders.now = function () {
+    renderGoals();
+    if (cache.now) renderNow(cache.now);
+    call('apiNow').then(function (r) { if (!busy) { remember('now', r); renderNow(r); } }).catch(fail);
+    if (!FOC) call('apiFocusToday').then(function (t) { if (t && t.todayMin >= (focToday.todayMin || 0)) { focKeepToday(t); if (!FOC && !focDone && !focBreak && current === 'now') drawPicker(); } }).catch(quiet);
+  };
   function renderStats(st) {
     $('n-xp').textContent = st.xp + ' XP';
     $('n-bar').style.width = Math.round(st.xpInLevel / st.perLevel * 100) + '%';
     $('n-lvl').textContent = 'Level ' + st.level;
     $('n-left').textContent = (st.perLevel - st.xpInLevel) + ' to level ' + (st.level + 1);
   }
-  function cardHtml(c) {
-    var tag, lines = [], acts;
-    if (c.type === 'event') { tag = '<span class="tag">' + (new Date(c.start) <= new Date() ? 'Happening now' : 'Up next · ' + hm(c.start)) + '</span>'; if (c.location) lines.push(c.location); lines.push(hm(c.start) + '–' + hm(c.end)); }
-    if (c.type === 'reminder') { tag = c.missed ? '<span class="tag miss">Missed · was ' + hm(c.start) + '</span>' : '<span class="tag">Reminder · ' + hm(c.start) + '</span>'; if (c.missed) lines.push('Finish it now and its leaf turns green again.'); }
-    if (c.type === 'suggestion') { tag = '<span class="tag mail">Found in an email</span>'; lines.push(whenLabel(c.start, c.allDay)); if (c.from) lines.push('From ' + c.from); }
-    if (c.type === 'routine') { tag = c.missed ? '<span class="tag miss">Routine · was ' + hm(c.start) + '</span>' : '<span class="tag">' + esc(c.routine || 'Morning') + ' routine · ' + hm(c.start) + '</span>'; lines.push(c.dur + ' min'); }
-    if (c.type === 'gift') { tag = '<span class="tag gift' + (c.tag === 'holiday' ? ' hol' : '') + '">' + tagIcon(c.tag) + (c.tag === 'holiday' ? 'Holiday' : 'Birthday') + ' ' + daysLeftLabel(c.daysLeft) + '</span>';
-      lines.push(c.event + ' · ' + dayName(c.eventStart || c.start, { weekday: 'short', day: 'numeric', month: 'short' })); lines.push(c.daysLeft > 0 ? 'Not sorted yet? This comes back every day until it is.' : 'Last chance to sort a present.'); }
-    if (c.type === 'email') { tag = '<span class="tag mail">Email needs you</span>'; lines.push('From ' + c.from); if (c.why) lines.push('Why: ' + c.why); }
-    var label = c.type === 'gift' ? 'Bought it' : c.type === 'suggestion' ? 'Add to calendar' : c.type === 'email' ? 'Done' : c.type === 'reminder' ? 'Done' : 'Got it';
-    acts = '<div class="acts">' +
-      (c.type === 'suggestion' ? '<button class="btn p wide" data-act="done">' + label + '</button><button class="btn g" data-act="no">No</button>' : '') +
-      (c.type === 'email' ? '<a class="btn g" href="' + esc(c.link) + '" target="_blank" rel="noopener">Open</a>' : '') +
-      '<button class="btn g" data-act="later">Later</button>' + (c.type === 'suggestion' ? '' : '<button class="btn p" data-act="done">' + label + '</button>') + '</div>';
-    var t = String(c.title || ''); if (t.length > 90) t = t.slice(0, 87).trim() + '…';
-    lines = lines.map(function (l) { l = String(l); return l.length > 70 ? l.slice(0, 67).trim() + '…' : l; });
-    return tag + '<h2' + (t.length > 40 ? ' class="long"' : t.length > 16 ? ' class="mid"' : '') + ' title="' + esc(c.title) + '">' + esc(t) + '</h2>' + lines.map(function (l) { return '<p>' + esc(l) + '</p>'; }).join('') +
-      '<div class="rw">' + (c.boss ? 'Boss task · ' : '') + '+' + c.xp + ' XP</div>' + acts;
-  }
-  function renderNow(r, preview) {
+  function renderNow(r) {
+    if (!r) return;
     if (r.woke !== undefined) showWoke(r.woke);
-    renderStats(r.stats);
-    if (preview) { /* optimistic view while saving */ }
-    nowCards = r.cards;
-    if (!nowCards.length) {
-      $('n-body').innerHTML = '<div class="empty" style="padding-top:60px"><b style="font-size:22px;color:var(--t)">All clear</b><br>Nothing left for today. Your plant has ' + r.stats.plant.done + ' leaves.</div>';
+    if (r.stats) renderStats(r.stats);
+    nowCards = r.cards || [];
+    if (FOC) { if (!$('f-run')) drawFocus(); return; }
+    if (focDone) return drawDone();
+    if (focBreak) return drawBreak();
+    drawPicker();
+  }
+  function focItems() {
+    var out = nowCards.filter(function (c) { return c.type !== 'suggestion'; }).map(function (c) {
+      var meta = c.type === 'event' ? (new Date(c.start) <= new Date() ? 'Happening now' : 'Event · ' + hm(c.start)) :
+        c.type === 'reminder' ? (c.missed ? 'Missed · was ' + hm(c.start) : 'Reminder · ' + hm(c.start)) :
+        c.type === 'routine' ? (c.routine || 'Morning') + ' routine · ' + c.dur + ' min' :
+        c.type === 'gift' ? 'Present for ' + c.event : c.type === 'email' ? 'Email from ' + c.from : '';
+      return { title: c.title, kind: c.type, key: c.key, id: c.id, link: c.link, xp: c.xp || 0, meta: meta };
+    });
+    ((LIFE && LIFE.goals) || []).forEach(function (g, i) { if (!g.done) out.push({ title: g.text, kind: 'goal', gi: i, xp: 25, meta: 'Weekly goal' }); });
+    return out;
+  }
+  function fShow(goals) { var g = $('n-goals'); if (g) g.hidden = !goals; }
+  function drawPicker() {
+    fShow(true);
+    var items = focItems(), first = items[0];
+    var row = function (x, i) { return '<button class="frow" data-i="' + i + '"><b>' + esc(cut(x.title, 60)) + '</b><span>' + esc(x.meta) + '</span></button>'; };
+    $('n-body').innerHTML = '<div class="fpick">' +
+      '<p class="fsub">Pick one thing. Everything else can wait.</p>' +
+      (focToday.todayMin ? '<div class="ftoday">Focused today: <b>' + focToday.todayMin + ' min</b> in ' + focToday.todayCount + (focToday.todayCount === 1 ? ' session' : ' sessions') + '</div>' : '') +
+      (first ? '<button class="fbig" data-i="0"><small>Start with this</small><b>' + esc(cut(first.title, 80)) + '</b><span>' + esc(first.meta) + '</span><i>Start focus</i></button>' : '<div class="empty" style="padding:24px 0 6px">Nothing open right now. Focus on something of your own:</div>') +
+      items.slice(1, 12).map(function (x, i) { return row(x, i + 1); }).join('') +
+      '<div class="fother"><input id="f-other" placeholder="Something else…" enterkeyhint="go" maxlength="120"><button class="btn p" id="f-go">Start</button></div></div>';
+    [].forEach.call($('n-body').querySelectorAll('[data-i]'), function (b) { b.onclick = function () { startFocus(items[+b.dataset.i]); }; });
+    var go = function () { var v = $('f-other').value.trim(); if (!v) { $('f-other').focus(); return; } startFocus({ title: v, kind: 'own', xp: 0 }); };
+    $('f-go').onclick = go; $('f-other').onkeydown = function (e) { if (e.key === 'Enter') go(); };
+  }
+
+  // ---- timer ----
+  function fElapsed() { return FOC ? Math.max(0, (FOC.pausedAt || Date.now()) - FOC.startedAt - (FOC.pausedMs || 0)) : 0; }
+  function fLeft() { return FOC && FOC.limitMs ? FOC.limitMs - fElapsed() : null; }
+  function mmss(ms) { var s = Math.max(0, Math.round(ms / 1000)), h = Math.floor(s / 3600), m = Math.floor(s / 60) % 60; s %= 60; return (h ? h + ':' + (m < 10 ? '0' : '') : '') + m + ':' + (s < 10 ? '0' : '') + s; }
+  function fAlarm() {
+    var left = fLeft();
+    if (FOC && left !== null && left > 0 && !FOC.pausedAt) call('apiFocusAlarm', new Date(Date.now() + left).toISOString(), FOC.title).catch(quiet);
+    else call('apiFocusAlarm', '').catch(quiet);
+  }
+  function startFocus(x) {
+    if (!x) return;
+    focDone = null; focBreak = null; focAll = false;
+    FOC = { title: x.title, kind: x.kind, key: x.key || '', id: x.id || '', gi: x.gi, link: x.link || '', xp: x.xp || 0, startedAt: Date.now(), pausedAt: 0, pausedMs: 0, limitMs: 25 * 60e3, steps: [], alerted: false };
+    if (x.kind === 'email') FOC.steps = [{ t: 'Open the email and read it once' }];
+    focSave(); fAlarm(); drawFocus();
+    if (navigator.vibrate) navigator.vibrate(15);
+  }
+  var PEP = ['One thing at a time. You are doing it.', 'Messy progress still counts.', 'I am right here with you.', 'Just the next small step.', 'Your phone can wait. This is your time.', 'Slow is fine. Stopping is the only way to lose.', 'Look at you go.'];
+  function drawFocus() {
+    fShow(false);
+    var st = FOC.steps, idx = st.findIndex(function (s) { return !s.done; }), cur = idx >= 0 ? st[idx] : null, doneN = st.filter(function (s) { return s.done; }).length;
+    var lim = FOC.limitMs ? Math.round((FOC.limitMs - fElapsed()) / 60e3) : 0;
+    $('n-body').innerHTML = '<div class="frun" id="f-run">' +
+      '<div class="ftask"><small>Focusing on</small><b>' + esc(cut(FOC.title, 90)) + '</b>' + (FOC.link ? '<a href="' + esc(FOC.link) + '" target="_blank" rel="noopener">Open email</a>' : '') + '</div>' +
+      '<div class="fring" id="f-ring"><svg viewBox="0 0 120 120"><circle cx="60" cy="60" r="52" class="t"/><circle cx="60" cy="60" r="52" class="v" id="f-arc"/></svg><div><b id="f-clock">0:00</b><span id="f-mode"></span></div></div>' +
+      '<div class="fchips">' + [10, 25, 45, 0].map(function (m) { return '<button data-lim="' + m + '">' + (m ? m + ' min' : 'No limit') + '</button>'; }).join('') + '</div>' +
+      '<div class="fbar"><button class="btn g" data-f="pause" id="f-pause">Pause</button><button class="btn a" data-f="finish">Finish</button><button class="btn g" data-f="stop">Switch</button></div>' +
+      '<div class="fup" id="f-up" hidden><b>Time is up!</b><div><button class="btn p" data-f="finish">I finished</button><button class="btn g" data-f="more">+5 min</button><button class="btn g" data-f="break">Break</button></div></div>' +
+      '<div class="fstep">' + (cur ?
+        '<small>Next small step' + (st.length > 1 ? ' · ' + (doneN + 1) + ' of ' + st.length : '') + '</small><p>' + esc(cur.t) + '</p><div class="fsacts"><button class="btn p" data-f="step">Step done</button><button class="btn g" data-f="stuck">Stuck?</button></div>' :
+        (st.length ? '<small>All steps done</small><p>Nice. Finish up, or add one more step.</p>' : '<small>Next small step</small><p class="fq">What is the very first thing you need to do?</p>') +
+        '<div class="fsacts"><button class="btn g" data-f="stuck">' + (st.length ? 'Give me more steps' : 'Stuck? Break it down') + '</button></div>') +
+      (st.length && !focAll ? '<button class="fall" data-f="all">' + (st.length > 1 ? 'See all ' + st.length + ' steps or add your own' : 'Add your own step') + '</button>' :
+        '<div class="fadd"><input id="f-step" placeholder="' + (st.length ? 'Add your own step…' : 'Type it, or tap Stuck…') + '" maxlength="100" enterkeyhint="done"><button data-f="add" aria-label="Add step">+</button></div>' +
+        (st.length > 1 ? '<ol class="fsteps">' + st.map(function (s, i) { return '<li class="' + (s.done ? 'd' : i === idx ? 'c' : '') + '">' + esc(s.t) + '</li>'; }).join('') + '</ol>' : '')) + '</div>' +
+      '<div class="fpanda"><span class="pw" id="f-panda"></span><p id="f-pep"></p></div></div>';
+    [].forEach.call($('n-body').querySelectorAll('[data-lim]'), function (b) { b.classList.toggle('on', FOC.limitMs ? +b.dataset.lim === lim || (+b.dataset.lim && Math.abs(+b.dataset.lim - lim) < 1) : +b.dataset.lim === 0); b.onclick = function () { setLimit(+b.dataset.lim); }; });
+    [].forEach.call($('n-body').querySelectorAll('[data-f]'), function (b) { b.onclick = function () { focAct(b.dataset.f); }; });
+    if ($('f-step')) $('f-step').onkeydown = function (e) { if (e.key === 'Enter') focAct('add'); };
+    focPep(); focTick();
+  }
+  function focPep(expr, line) {
+    var p = $('f-panda'); if (!p) return;
+    p.innerHTML = panda(expr || (FOC && FOC.pausedAt ? 'sleepy' : 'happy'));
+    $('f-pep').textContent = line || PEP[focLine % PEP.length];
+  }
+  function setLimit(m) {
+    FOC.limitMs = m ? fElapsed() + m * 60e3 : 0; FOC.alerted = false; focSave(); fAlarm(); drawFocus();
+  }
+  function focTick() {
+    if (!FOC) return;
+    var left = fLeft(), el = fElapsed();
+    if (left !== null && left <= 0 && !FOC.alerted && !FOC.pausedAt) {
+      FOC.alerted = true; focSave();
+      if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+      if (current !== 'now') toast('Focus time is up: ' + cut(FOC.title, 40), { action: 'Open', onAction: function () { show('now'); } });
+    }
+    if (current !== 'now' || !$('f-clock')) return;
+    $('f-clock').textContent = left !== null ? (left > 0 ? mmss(left) : '+' + mmss(-left)) : mmss(el);
+    $('f-mode').textContent = FOC.pausedAt ? 'Paused' : left !== null ? (left > 0 ? 'left' : 'over time') : 'focused';
+    var arc = $('f-arc'), C = 2 * Math.PI * 52, frac = left !== null ? Math.max(0, left) / Math.max(1, FOC.limitMs) : (el % 3600e3) / 3600e3;
+    arc.style.strokeDasharray = C; arc.style.strokeDashoffset = C * (1 - frac);
+    $('f-ring').classList.toggle('over', left !== null && left <= 0);
+    $('f-up').hidden = !(left !== null && left <= 0);
+    $('f-pause').textContent = FOC.pausedAt ? 'Resume' : 'Pause';
+    if (Math.floor(el / 120e3) !== focLine && !FOC.pausedAt) { focLine = Math.floor(el / 120e3); focPep(); }
+  }
+  setInterval(focTick, 1000);
+  document.addEventListener('visibilitychange', function () { if (!document.hidden) focTick(); });
+
+  // ---- breaking a task down ----
+  var STEP_KITS = [
+    [/stud|learn|homework|exam|test|revise|read|tanul|házi|vizsga|olvas|dolgozat|zh\b/i, ['Clear the desk and put the phone face down', 'Open the book or notes at the right page', 'Read one page or one section', 'Write down 3 key points from it', 'Test yourself on those 3 points']],
+    [/clean|tidy|wash|dish|laundry|vacuum|takarít|rendet|mosogat|mosás|porszív|pakol/i, ['Put on some music', 'Pick up 10 things and put them away', 'Clear one surface completely', 'Wipe it down', 'Take out the trash']],
+    [/e-?mail|write|message|reply|letter|text\b|ír|levél|üzenet|válaszol|email/i, ['Open a blank draft', 'Write one rough sentence saying what you need', 'Add the details, messy is fine', 'Read it once and fix the obvious bits', 'Send it']],
+    [/call|phone|ring|appointment|book a|hív|telefon|időpont/i, ['Find the number', 'Write down the one thing you need to ask', 'Dial', 'Write down what they said']],
+    [/pay|bill|tax|invoice|bank|subscription|számla|fizet|adó|utal|befizet/i, ['Find the bill or log in', 'Check the amount and the due date', 'Make the payment', 'Save the receipt']],
+    [/shop|buy|grocer|order|vásárol|bevásárl|vesz|rendel|ajándék|present|gift/i, ['Write a short list', 'Check what you already have', 'Pick the shop or site', 'Get it done']],
+    [/project|essay|report|presentation|slides|code|build|design|plan|projekt|esszé|beszámoló|prezentáció|program|terv/i, ['Write the goal in one sentence', 'List the 3 main parts', 'Make the roughest possible version of part 1', 'Improve part 1 for 10 minutes', 'Write down what comes next']],
+    [/gym|workout|run\b|running|exercise|train|walk|edz|fut|sport|tornáz|séta/i, ['Put on your workout clothes', 'Fill a water bottle', 'Warm up for 5 minutes', 'Do the main part', 'Stretch for 2 minutes']],
+    [/cook|meal|dinner|lunch|breakfast|bake|főz|vacsor|ebéd|reggeli|süt/i, ['Pick what to make', 'Get the ingredients out', 'Prep everything', 'Cook it', 'Clean as you go']]
+  ];
+  function focSteps(title, kind) {
+    if (kind === 'gift') return ['Think of 3 things they love', 'Pick one idea', 'Order or buy it', 'Add a reminder to wrap it'];
+    if (kind === 'event') return ['Check the time and the place', 'Get together what you need', 'Leave a few minutes early'];
+    if (kind === 'email') return ['Open the email and read it once', 'Decide: reply, do, or let go', 'Write one rough sentence back', 'Send it'];
+    for (var i = 0; i < STEP_KITS.length; i++) if (STEP_KITS[i][0].test(title)) return STEP_KITS[i][1].slice();
+    return ['Get what you need in front of you', 'Do the smallest first piece', 'Keep going for 5 minutes', 'Check what is left'];
+  }
+  function focStuck() {
+    var st = FOC.steps, idx = st.findIndex(function (s) { return !s.done; });
+    if (idx < 0) {
+      var have = {}; st.forEach(function (s) { have[s.t] = 1; });
+      var add = focSteps(FOC.title, FOC.kind).filter(function (t) { return !have[t]; });
+      if (!add.length) add = ['Look at what is done and pick one thing to improve', 'Spend 5 more minutes on it'];
+      add.forEach(function (t) { st.push({ t: t }); });
+      focPep('excited', 'Here is a path. Only look at the first step.');
       return;
     }
-    var c = nowCards[0];
-    var rest = nowCards.slice(1, 4).map(function (x) { return cut(x.title, 24); });
-    $('n-body').innerHTML = '<div class="stack">' + (nowCards.length > 2 ? '<div class="cd b2"></div>' : '') + (nowCards.length > 1 ? '<div class="cd b1"></div>' : '') +
-      '<div class="cd front" id="n-card">' + cardHtml(c) + '</div></div>' +
-      '<div class="swipehint"><span>← Later</span><span>' + (c.type === 'suggestion' ? 'Add' : 'Done') + ' →</span></div>' +
-      (rest.length ? '<p class="hint">' + (nowCards.length - 1) + ' more: ' + esc(rest.join(', ')) + (nowCards.length > 4 ? '…' : '') + '</p>' : '<p class="hint">Last one for today</p>') +
-      '<div class="dots">' + nowCards.slice(0, 6).map(function (x, i) { return '<i class="' + (i ? '' : 'on') + '"></i>'; }).join('') + '</div>';
-    var card = $('n-card');
-    [].forEach.call(card.querySelectorAll('[data-act]'), function (b) { b.onclick = function () { cardAct(c, b.dataset.act); }; });
-    swipe(card, function (dir) { cardAct(c, dir > 0 ? 'done' : 'later'); });
+    var cur = st[idx], small = /^Do just 2 minutes|^Take 3 slow|^Stand up/.test(cur.t);
+    var ins = small ? [{ t: 'Stand up, drink some water, sit back down' }] : [{ t: 'Take 3 slow breaths' }, { t: 'Do just 2 minutes of: ' + cur.t }];
+    st.splice.apply(st, [idx, 0].concat(ins));
+    focPep('worried', small ? 'That is okay. A tiny reset first.' : 'Let us make it smaller. Just 2 minutes, then decide.');
   }
-  var busy = false;
-  function cardAct(c, act) {
-    if (busy) return; busy = true;
-    var card = $('n-card');
-    if (card && act === 'no') dust(card);
-    else if (card) { card.style.transform = 'translateX(' + (act === 'later' ? '-' : '') + '120%) rotate(' + (act === 'later' ? '-' : '') + '8deg)'; card.style.opacity = '0'; }
-    var fn = act === 'done' ? 'apiCardDone' : act === 'later' ? 'apiCardLater' : 'apiCardDismiss';
-    // Home shows it as done too, without waiting for the server
-    if (act === 'done') { if (c.type === 'reminder' && c.id) remDone[c.id] = 1; markHome(c.key, c.type === 'event' || c.type === 'routine' ? { done: 1 } : { hide: 1 }); homeShown = ''; }
-    var before = +$('n-xp').textContent.replace(/\D/g, '') || 0;
-    // Show the next card right away; the server answer replaces it when it arrives.
-    setTimeout(function () {
-      if (!busy) return;
-      var rest = nowCards.filter(function (x) { return x.key !== c.key; });
-      if (act === 'later') rest.push(c);
-      var st = JSON.parse(JSON.stringify(cache.now ? cache.now.stats : { xp: 0, xpInLevel: 0, perLevel: 200, level: 1, plant: { done: 0, missed: 0, toGrow: 0 } }));
-      if (act === 'done') { st.xp += c.xp; st.xpInLevel = Math.min(st.perLevel, st.xpInLevel + c.xp); xpFly(c.xp); flown = true; }
-      renderNow({ cards: rest, stats: st }, true);
-    }, act === 'no' ? 450 : 220);
-    var flown = false;
-    call(fn, c.key).then(function (r) {
-      busy = false; remember('now', r); if (act === 'done') syncHome();
-      if (flown) before = r.stats.xp;
-      if (act === 'done') { xpFly(r.stats.xp - before); if (c.type === 'reminder' || c.type === 'event') toast('Nice. A new leaf grew'); }
-      renderNow(r);
-    }).catch(function (e) { busy = false; fail(e); loaders.now(); });
+  function focAct(a) {
+    if (!FOC && a !== 'finish') return;
+    if (a === 'step') {
+      var s = FOC.steps.find(function (x) { return !x.done; }); if (s) s.done = true;
+      focSave(); if (navigator.vibrate) navigator.vibrate(10); drawFocus();
+      var left = FOC.steps.filter(function (x) { return !x.done; }).length;
+      focPep('proud', left ? 'Step done. ' + left + ' to go.' : 'Every step done! Tap Finish when you are ready.');
+      return;
+    }
+    if (a === 'stuck') { focStuck(); focSave(); var line = $('f-pep').textContent, ex = FOC.steps.some(function (x) { return !x.done; }) ? 'happy' : 'excited'; drawFocus(); focPep(ex, line); return; }
+    if (a === 'all') { focAll = true; drawFocus(); $('f-step').focus(); return; }
+    if (a === 'add') { var v = $('f-step').value.trim(); if (!v) { $('f-step').focus(); return; } FOC.steps.push({ t: v }); focSave(); drawFocus(); return; }
+    if (a === 'pause') {
+      if (FOC.pausedAt) { FOC.pausedMs += Date.now() - FOC.pausedAt; FOC.pausedAt = 0; } else FOC.pausedAt = Date.now();
+      focSave(); fAlarm(); focTick(); focPep(); return;
+    }
+    if (a === 'more') { FOC.limitMs = fElapsed() + 5 * 60e3; FOC.alerted = false; focSave(); fAlarm(); drawFocus(); return; }
+    if (a === 'break') { endFocus(false); startBreak(); return; }
+    if (a === 'finish') { endFocus(true); return; }
+    if (a === 'stop') { endFocus(false); focDone = null; drawPicker(); toast('Stopped. Pick what is next'); }
   }
+  /** Ends the session: logs the minutes, and when done=true also ticks the task off everywhere. */
+  function endFocus(done) {
+    var f = FOC, mins = Math.round(fElapsed() / 60e3), pts = mins >= 1 ? Math.min(20, 5 + Math.floor(mins / 5)) : 0;
+    FOC = null; focSave();
+    focKeepToday({ todayMin: (focToday.todayMin || 0) + mins, todayCount: (focToday.todayCount || 0) + (mins >= 1 ? 1 : 0) });
+    var gain = pts + (done ? f.xp : 0);
+    if (done) {
+      if (f.key) {
+        if (f.kind === 'reminder' && f.id) remDone[f.id] = 1;
+        markHome(f.key, f.kind === 'event' || f.kind === 'routine' ? { done: 1 } : { hide: 1 }); homeShown = '';
+        nowCards = nowCards.filter(function (x) { return x.key !== f.key; });
+        busy = true;
+        call('apiCardDone', f.key).then(function (r) { busy = false; remember('now', r); nowCards = r.cards || []; if (r.stats) renderStats(r.stats); syncHome(); if (focDone && current === 'now') drawDone(); }).catch(function (e) { busy = false; fail(e); });
+      } else if (f.kind === 'goal' && LIFE && LIFE.goals && LIFE.goals[f.gi] && !LIFE.goals[f.gi].done) {
+        LIFE.goals[f.gi].done = true; renderGoals();
+        call('apiGoalToggle', f.gi).then(function (r) { LIFE.goals = r.goals; remember('life', LIFE); }).catch(fail);
+      }
+    }
+    call('apiFocusLog', f.title, mins).then(function (r) { if (r) { focKeepToday(r); if (r.stats && !busy) renderStats(r.stats); } }).catch(function () { call('apiFocusAlarm', '').catch(quiet); });
+    if (gain) xpFly(gain);
+    if (done) { focDone = { title: f.title, mins: mins, xp: gain, key: f.key, steps: f.steps.filter(function (s) { return s.done; }).length }; drawDone(); }
+  }
+  function drawDone() {
+    fShow(false);
+    var d = focDone, next = focItems().filter(function (x) { return x.key !== d.key || !x.key; })[0];
+    $('n-body').innerHTML = '<div class="fdone"><span class="pw">' + panda('proud') + '</span>' +
+      '<h2>Done!</h2><p>' + esc(cut(d.title, 80)) + '</p>' +
+      '<div class="wrstat"><div><b>' + d.mins + '</b><small>minutes</small></div><div><b>+' + d.xp + '</b><small>XP</small></div><div><b>' + (focToday.todayMin || d.mins) + '</b><small>min today</small></div></div>' +
+      (next ? '<div class="fnext"><small>Up next</small><b>' + esc(cut(next.title, 70)) + '</b><span>' + esc(next.meta) + '</span></div>' : '<p class="small">That was the last open thing. Nice work.</p>') +
+      '<div class="fbar">' + (next ? '<button class="btn p" id="f-next">Start it</button>' : '') + '<button class="btn g" id="f-brk">5-min break</button><button class="btn g" id="f-list">Back to list</button></div></div>';
+    if (next) $('f-next').onclick = function () { startFocus(next); };
+    $('f-brk').onclick = startBreak;
+    $('f-list').onclick = function () { focDone = null; drawPicker(); };
+  }
+  var breakT = null;
+  function startBreak() {
+    focDone = null; focBreak = { until: Date.now() + 5 * 60e3 }; drawBreak();
+  }
+  function drawBreak() {
+    fShow(false);
+    $('n-body').innerHTML = '<div class="fdone fbreak"><span class="pw">' + panda('sleepy') + '</span><h2>Break time</h2><p>Stand up, stretch, drink some water. Not your phone.</p>' +
+      '<div class="fring sm"><div><b id="f-bclock">5:00</b><span>left</span></div></div>' +
+      '<div class="fbar"><button class="btn p" id="f-bend">I am ready</button></div></div>';
+    $('f-bend').onclick = endBreak;
+    clearInterval(breakT);
+    breakT = setInterval(function () {
+      if (!focBreak) return clearInterval(breakT);
+      var left = focBreak.until - Date.now();
+      if ($('f-bclock')) $('f-bclock').textContent = mmss(left);
+      if (left <= 0) { clearInterval(breakT); if (navigator.vibrate) navigator.vibrate([150, 80, 150]); toast('Break is over'); endBreak(); }
+    }, 1000);
+  }
+  function endBreak() { clearInterval(breakT); focBreak = null; if (current === 'now') drawPicker(); }
+
   /** The card crumbles into dust that drifts away, left to right. */
   // Finished card: a quick pop and fade, then the gap closes. Cheap enough to feel instant on a phone.
   function dust(el) {

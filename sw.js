@@ -1,5 +1,5 @@
 // Opens the app instantly from the phone's copy, and fetches the newest version in the background.
-var CACHE = 'myday-v33';
+var CACHE = 'myday-v34';
 self.addEventListener('install', function (e) { self.skipWaiting(); });
 self.addEventListener('activate', function (e) {
   e.waitUntil(caches.keys().then(function (ks) { return Promise.all(ks.filter(function (k) { return k !== CACHE; }).map(function (k) { return caches.delete(k); })); }).then(function () { return self.clients.claim(); }));
